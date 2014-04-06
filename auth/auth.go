@@ -8,6 +8,8 @@ type UserAuth interface {
 type SecurityDriver interface {
 	Register()
 	Authenticate()
+	Login()
+	Logout()
 }
 
 type StorageDriver interface {
