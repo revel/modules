@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/revel/revel"
+	"github.com/revel/revel/testing"
 )
 
 type TestRunner struct {
@@ -42,7 +43,7 @@ var NONE = []reflect.Value{}
 
 func (c TestRunner) Index() revel.Result {
 	var testSuites []TestSuiteDesc
-	for _, testSuite := range revel.TestSuites {
+	for _, testSuite := range testing.TestSuites {
 		testSuites = append(testSuites, DescribeSuite(testSuite))
 	}
 	return c.Render(testSuites)
@@ -51,7 +52,7 @@ func (c TestRunner) Index() revel.Result {
 // Run runs a single test, given by the argument.
 func (c TestRunner) Run(suite, test string) revel.Result {
 	result := TestResult{Name: test}
-	for _, testSuite := range revel.TestSuites {
+	for _, testSuite := range testing.TestSuites {
 		t := reflect.TypeOf(testSuite).Elem()
 		if t.Name() != suite {
 			continue
@@ -66,7 +67,7 @@ func (c TestRunner) Run(suite, test string) revel.Result {
 					if error == nil {
 						result.ErrorHtml = template.HTML(html.EscapeString(fmt.Sprint(err)))
 					} else {
-						testSuite := v.Elem().FieldByName("TestSuite").Interface().(revel.TestSuite)
+						testSuite := v.Elem().FieldByName("TestSuite").Interface().(testing.TestSuite)
 						res := formatResponse(testSuite)
 
 						var buffer bytes.Buffer
@@ -84,7 +85,7 @@ func (c TestRunner) Run(suite, test string) revel.Result {
 
 			// Initialize the test suite with a NewTestSuite()
 			testSuiteInstance := v.Elem().FieldByName("TestSuite")
-			testSuiteInstance.Set(reflect.ValueOf(revel.NewTestSuite()))
+			testSuiteInstance.Set(reflect.ValueOf(testing.NewTestSuite()))
 
 			// Call Before(), call the test, and call After().
 			if m := v.MethodByName("Before"); m.IsValid() {
@@ -109,7 +110,7 @@ func (c TestRunner) Run(suite, test string) revel.Result {
 // Used by the "test" command line tool.
 func (c TestRunner) List() revel.Result {
 	var testSuites []TestSuiteDesc
-	for _, testSuite := range revel.TestSuites {
+	for _, testSuite := range testing.TestSuites {
 		testSuites = append(testSuites, DescribeSuite(testSuite))
 	}
 	return c.RenderJson(testSuites)
@@ -162,7 +163,7 @@ func errorSummary(error *revel.Error) string {
 
 // formatResponse gets *revel.TestSuite as input parameter and
 // transform response related info into a readable format.
-func formatResponse(t revel.TestSuite) map[string]string {
+func formatResponse(t testing.TestSuite) map[string]string {
 	if t.Response == nil {
 		return map[string]string{}
 	}
