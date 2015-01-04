@@ -43,19 +43,54 @@ type Static struct {
 //   Calls:
 //     Static.Serve("public/img", "favicon.png")
 func (c Static) Serve(prefix, filepath string) revel.Result {
-	var basePath string
+	// Fix for #503.
+	prefix = c.Params.Fixed.Get("prefix")
+	if prefix == "" {
+		return c.NotFound("")
+	}
 
+	return serve(c, prefix, filepath)
+}
+
+// This method allows modules to serve binary files. The parameters are the same
+// as Static.Serve with the additional module name pre-pended to the list of
+// arguments.
+func (c Static) ServeModule(moduleName, prefix, filepath string) revel.Result {
+	// Fix for #503.
+	prefix = c.Params.Fixed.Get("prefix")
+	if prefix == "" {
+		return c.NotFound("")
+	}
+
+	var basePath string
+	for _, module := range revel.Modules {
+		if module.Name == moduleName {
+			basePath = module.Path
+		}
+	}
+
+	absPath := fpath.Join(basePath, fpath.FromSlash(prefix))
+
+	return serve(c, absPath, filepath)
+}
+
+
+// This method allows static serving of application files in a verified manner.
+func serve(c Static, prefix, filepath string) revel.Result {
+	var basePath string
 	if !fpath.IsAbs(prefix) {
 		basePath = revel.BasePath
 	}
 
 	basePathPrefix := fpath.Join(basePath, fpath.FromSlash(prefix))
 	fname := fpath.Join(basePathPrefix, fpath.FromSlash(filepath))
+	// Verify the request file path is within the application's scope of access
 	if !strings.HasPrefix(fname, basePathPrefix) {
 		revel.WARN.Printf("Attempted to read file outside of base path: %s", fname)
 		return c.NotFound("")
 	}
 
+	// Verify file path is accessible
 	finfo, err := os.Stat(fname)
 	if err != nil {
 		if os.IsNotExist(err) || err.(*os.PathError).Err == syscall.ENOTDIR {
@@ -66,11 +101,13 @@ func (c Static) Serve(prefix, filepath string) revel.Result {
 		return c.RenderError(err)
 	}
 
+	// Disallow directory listing
 	if finfo.Mode().IsDir() {
 		revel.WARN.Printf("Attempted directory listing of %s", fname)
 		return c.Forbidden("Directory listing not allowed")
 	}
 
+	// Open request file path
 	file, err := os.Open(fname)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -81,20 +118,4 @@ func (c Static) Serve(prefix, filepath string) revel.Result {
 		return c.RenderError(err)
 	}
 	return c.RenderFile(file, revel.Inline)
-}
-
-// This method allows modules to serve binary files. The parameters are the same
-// as Static.Serve with the additional module name pre-pended to the list of
-// arguments.
-func (c Static) ServeModule(moduleName, prefix, filepath string) revel.Result {
-	var basePath string
-	for _, module := range revel.Modules {
-		if module.Name == moduleName {
-			basePath = module.Path
-		}
-	}
-
-	absPath := fpath.Join(basePath, fpath.FromSlash(prefix))
-
-	return c.Serve(absPath, filepath)
 }
