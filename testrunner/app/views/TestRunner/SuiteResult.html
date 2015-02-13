@@ -38,7 +38,7 @@ a { color: #0088cc; }
 				{{range .Results}}
 					<tr class="result {{if .Passed}}passed{{else}}failed{{end}}">
 						<td><span>{{.Name}}</span></td>
-						<td>{{if .ErrorHtml}}{{.ErrorHtml}}{{else}}PASSED{{end}}</td>
+						<td>{{if .ErrorHTML}}{{.ErrorHTML}}{{else}}PASSED{{end}}</td>
 					</tr>
 				{{end}}
 			</table>
