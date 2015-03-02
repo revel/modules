@@ -19,9 +19,12 @@ header.failed { background-color: #FFB6C1 !important; }
 table { margin-top: 20px; padding: 8px; line-height: 20px; }
 td { vertical-align: top; padding-right:20px; }
 a { color: #0088cc; }
-.container { margin-left: auto; margin-right: auto; width: 940px; }
+.container { margin-left: auto; margin-right: auto; width: 940px; overflow: hidden; }
+.result h2 { font-size: 16px; border-bottom: 1px solid #f0f0f0; padding-bottom: 0.2em; }
 .result.failed b { font-weight:bold; color: #C00; font-size: 14px; }
-.result.failed span { color: #C00; font-size: 14px; }
+.result.failed h2 { color: #C00; }
+.result .info { font-size: 12px; }
+.result .info pre  { overflow: auto; background-color: #f0f0f0; width: 100%; max-height: 500px; }
 </style>
 
 	</head>
@@ -34,14 +37,12 @@ a { color: #0088cc; }
 		</header>
 
 		<div class="container">
-			<table>
-				{{range .Results}}
-					<tr class="result {{if .Passed}}passed{{else}}failed{{end}}">
-						<td><span>{{.Name}}</span></td>
-						<td>{{if .ErrorHtml}}{{.ErrorHtml}}{{else}}PASSED{{end}}</td>
-					</tr>
-				{{end}}
-			</table>
+			{{range .Results}}
+				<div class="result {{if .Passed}}passed{{else}}failed{{end}}">
+					<div><h2>{{.Name}}</h2></div>
+					<div class="info">{{if .ErrorHTML}}{{.ErrorHTML}}{{else}}PASSED{{end}}</div>
+				</div>
+			{{end}}
 		</div>
 	</body>
 </html>
