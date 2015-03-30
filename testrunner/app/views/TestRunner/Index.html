@@ -78,13 +78,13 @@
 
     $(function() {
         var divId, visible;
-		//close any panels that were previously closed.
+        //close any panels that were previously closed.
         $("div.panel-collapse").each(function() {
             divId = "#" + $(this).attr("id");
             visible = localStorage.getItem("testrunner_" + divId);
             if (visible == "false") {
                 $(divId).css("height", "0").removeClass("in"); //this is the way bootstrap does it.
-				$("a[data-target=" + divId + "]").addClass("collapsed");
+                $("a[data-target=" + divId + "]").addClass("collapsed");
             }
         });
     });
