@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/revel/revel"
@@ -191,7 +192,25 @@ func describeSuite(testSuite interface{}) TestSuiteDesc {
 
 // errorSummary gets an error and returns its summary in human readable format.
 func errorSummary(err *revel.Error) (message string) {
-	message = fmt.Sprintf("%4sStatus: %s\n%4sIn %s", "", err.Description, "", err.Path)
+	EXPECTED_PREFIX := "(expected)"
+	ACTUAL_SUFFIX := "(actual)"
+	errDesc := err.Description
+	//strip the actual/expected stuff to provide more condensed display.
+	if strings.Index(errDesc, EXPECTED_PREFIX) == 0 {
+		errDesc = errDesc[len(EXPECTED_PREFIX):len(errDesc)]
+	}
+	if strings.LastIndex(errDesc, ACTUAL_SUFFIX) > 0 {
+		errDesc = errDesc[0 : len(errDesc)-len(ACTUAL_SUFFIX)]
+	}
+
+	errFile := err.Path
+	slashIdx := strings.LastIndex(errFile, "/")
+	if slashIdx > 0 {
+		errFile = errFile[slashIdx+1 : len(errFile)]
+	}
+
+	message = fmt.Sprintf("%s %s#%d", errDesc, errFile, err.Line)
+	return
 
 	// If line of error isn't known return the message as is.
 	if err.Line == 0 {
@@ -234,6 +253,15 @@ func formatResponse(t testing.TestSuite) map[string]string {
 	}
 }
 
+//functions needed to sort the testsuites by name.
+type SortBySuiteName []interface{}
+
+func (a SortBySuiteName) Len() int      { return len(a) }
+func (a SortBySuiteName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a SortBySuiteName) Less(i, j int) bool {
+	return reflect.TypeOf(a[i]).Elem().Name() < reflect.TypeOf(a[j]).Elem().Name()
+}
+
 func init() {
 	// Every time app is restarted convert the list of available test suites
 	// provided by the revel testing package into a format which will be used by
@@ -241,6 +269,7 @@ func init() {
 	revel.OnAppStart(func() {
 		// Extracting info about available test suites from revel/testing package.
 		registeredTests = map[string]int{}
+		sort.Sort(SortBySuiteName(testing.TestSuites))
 		for _, testSuite := range testing.TestSuites {
 			testSuites = append(testSuites, describeSuite(testSuite))
 		}
