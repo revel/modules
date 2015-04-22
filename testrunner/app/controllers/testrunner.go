@@ -192,15 +192,15 @@ func describeSuite(testSuite interface{}) TestSuiteDesc {
 
 // errorSummary gets an error and returns its summary in human readable format.
 func errorSummary(err *revel.Error) (message string) {
-	EXPECTED_PREFIX := "(expected)"
-	ACTUAL_SUFFIX := "(actual)"
+	expected_prefix := "(expected)"
+	actual_prefix := "(actual)"
 	errDesc := err.Description
 	//strip the actual/expected stuff to provide more condensed display.
-	if strings.Index(errDesc, EXPECTED_PREFIX) == 0 {
-		errDesc = errDesc[len(EXPECTED_PREFIX):len(errDesc)]
+	if strings.Index(errDesc, expected_prefix) == 0 {
+		errDesc = errDesc[len(expected_prefix):len(errDesc)]
 	}
-	if strings.LastIndex(errDesc, ACTUAL_SUFFIX) > 0 {
-		errDesc = errDesc[0 : len(errDesc)-len(ACTUAL_SUFFIX)]
+	if strings.LastIndex(errDesc, actual_prefix) > 0 {
+		errDesc = errDesc[0 : len(errDesc)-len(actual_prefix)]
 	}
 
 	errFile := err.Path
@@ -210,21 +210,22 @@ func errorSummary(err *revel.Error) (message string) {
 	}
 
 	message = fmt.Sprintf("%s %s#%d", errDesc, errFile, err.Line)
-	return
 
-	// If line of error isn't known return the message as is.
-	if err.Line == 0 {
-		return
-	}
-
-	// Otherwise, include info about the line number and the relevant
-	// source code lines.
-	message += fmt.Sprintf(" (around line %d): ", err.Line)
-	for _, line := range err.ContextSource() {
-		if line.IsError {
-			message += line.Source
+	/*
+		// If line of error isn't known return the message as is.
+		if err.Line == 0 {
+			return
 		}
-	}
+
+		// Otherwise, include info about the line number and the relevant
+		// source code lines.
+		message += fmt.Sprintf(" (around line %d): ", err.Line)
+		for _, line := range err.ContextSource() {
+			if line.IsError {
+				message += line.Source
+			}
+		}
+	*/
 
 	return
 }
@@ -253,12 +254,12 @@ func formatResponse(t testing.TestSuite) map[string]string {
 	}
 }
 
-//functions needed to sort the testsuites by name.
-type SortBySuiteName []interface{}
+//sortbySuiteName sorts the testsuites by name.
+type sortBySuiteName []interface{}
 
-func (a SortBySuiteName) Len() int      { return len(a) }
-func (a SortBySuiteName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a SortBySuiteName) Less(i, j int) bool {
+func (a sortBySuiteName) Len() int      { return len(a) }
+func (a sortBySuiteName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a sortBySuiteName) Less(i, j int) bool {
 	return reflect.TypeOf(a[i]).Elem().Name() < reflect.TypeOf(a[j]).Elem().Name()
 }
 
@@ -269,7 +270,7 @@ func init() {
 	revel.OnAppStart(func() {
 		// Extracting info about available test suites from revel/testing package.
 		registeredTests = map[string]int{}
-		sort.Sort(SortBySuiteName(testing.TestSuites))
+		sort.Sort(sortBySuiteName(testing.TestSuites))
 		for _, testSuite := range testing.TestSuites {
 			testSuites = append(testSuites, describeSuite(testSuite))
 		}
