@@ -12,7 +12,7 @@
         header { background-color:#ADD8E6 }
         header h1 {margin-top: 10px; margin-bottom:20px;}
         header table {margin-bottom: 0px }
-        td .btn {margin-bottom: 1px; line-height: 1.0}
+        td .btn {margin-bottom: 1px; }
         button.file-test { margin-bottom: 0px; margin-left: 2px }
         table.tests tr { border-bottom: 1px solid #ddd; background-color: #f9f9f9; }
         .table > tbody > tr > td { padding-top:1px; padding-bottom:2px; vertical-align: middle; }
@@ -43,7 +43,7 @@
         <header>
             <div class="container">
                 <h1 class="pull-left">Test Runner <small>- Run your unit tests here.</small> </h1>
-                    <div style="margin-top:8px" class="pull-right">
+                    <div style="margin-top:16px" class="pull-right">
                         <button class="btn btn-success" all-tests="">Run All Tests</button>
                         <div><a class="small" href="#" id="allTestResults"></a></div>
                     </div>
@@ -54,8 +54,8 @@
             {{ $testFile := .Name }}
             <div style="margin-top:10px;" class="panel panel-default">
                 <div class="panel-heading">
-                    <button class="btn btn-xs btn-success file-test" test-file="{{.Name}}" class="btn btn-success btn-xs">Run</button>
-                    <span class="h5">&nbsp;<a class="collapseLnk" data-toggle="collapse" data-target="#{{.Name}}" href="#">{{.Name}}</a></span>
+                    <button class="btn btn-xs btn-success file-test" test-file="{{.Name}}">Run</button>
+                    <span class="h5">&nbsp;<a id="link-{{ $testFile }}" class="collapseLnk" data-toggle="collapse" data-target="#{{.Name}}" href="#">{{.Name}}</a></span>
                 </div>
                 <div id="{{.Name}}" class="panel-collapse collapse in">
                     <table class="panel-body table table-condensed tests" suite="{{.Name}}">
@@ -98,9 +98,10 @@
     });
 
     $("#allTestResults").click(function() {
-        var badRow = $("tr.failed").get(0);
-        if (badRow !== undefined) 
-            badRow.scrollIntoView();
+        var badRows = $("tr.failed");
+        if (badRows.length >= 0) {
+            badRows[0].scrollIntoView();
+        }
 
         return false;
     });
@@ -170,13 +171,18 @@
             success: function(result) {
                 row.attr("class", result.Passed ? "passed" : "failed");
                 if (result.Passed) {
-                    console.log("pass: " + result.Name);
                     passCount++;
                 } else {
                     console.log("fail: result.Name");
                     failCount++;
-                    $("a", resultCell).text(result.ErrorSummary);
+                    var resultLnk = $("a", resultCell);
+                    $(resultLnk).text(result.ErrorSummary);
                     resultCell.append(result.ErrorHTML);
+
+                    var pnlDiv = row.closest("div");
+                    if ($(pnlDiv).hasClass("in") == false) {
+                        $("#link-" + suite).click();
+                    }
 
                     $("#result_" + suite + "_" + test + " pre code").each(function(i, block) {
                         hljs.highlightBlock(block);
