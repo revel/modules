@@ -12,13 +12,15 @@
         header { background-color:#ADD8E6 }
         header h1 {margin-top: 10px; margin-bottom:20px;}
         header table {margin-bottom: 0px }
-        td .btn {margin-bottom: 1px; line-height: 1.0}
+        td .btn {margin-bottom: 1px; }
         button.file-test { margin-bottom: 0px; margin-left: 2px }
         table.tests tr { border-bottom: 1px solid #ddd; background-color: #f9f9f9; }
         .table > tbody > tr > td { padding-top:1px; padding-bottom:2px; vertical-align: middle; }
         .passed td { background-color: #90EE90 !important; }
         .failed td { background-color: #FFB6C1 !important; }
-        .tests td.name, .tests td.result { }
+        td.result div.panel-default{ display:none; }
+        td.result > a { color: red; }
+        td.rightCol { width: 40px; }
         pre { font-size:10px; white-space: pre; }
         .panel-heading {
             padding: 2px 2px
@@ -33,7 +35,7 @@
         .panel-heading a.collapsed:after {
             content:"\25b6";
         }
-        .name { width: 50%; }
+        .name { width: 35%; }
         .w100 { width: 100%; }
         </style>
     </head>
@@ -41,7 +43,7 @@
         <header>
             <div class="container">
                 <h1 class="pull-left">Test Runner <small>- Run your unit tests here.</small> </h1>
-                    <div style="margin-top:8px" class="pull-right">
+                    <div style="margin-top:16px" class="pull-right">
                         <button class="btn btn-success" all-tests="">Run All Tests</button>
                         <div><a class="small" href="#" id="allTestResults"></a></div>
                     </div>
@@ -52,16 +54,16 @@
             {{ $testFile := .Name }}
             <div style="margin-top:10px;" class="panel panel-default">
                 <div class="panel-heading">
-                    <button class="btn btn-xs btn-success file-test" test-file="{{.Name}}" class="btn btn-success btn-xs">Run</button>
-                    <span class="h5">&nbsp;<a class="collapseLnk" data-toggle="collapse" data-target="#{{.Name}}" href="#">{{.Name}}</a></span>
+                    <button class="btn btn-xs btn-success file-test" test-file="{{.Name}}">Run</button>
+                    <span class="h5">&nbsp;<a id="link-{{ $testFile }}" class="collapseLnk" data-toggle="collapse" data-target="#{{.Name}}" href="#">{{.Name}}</a></span>
                 </div>
                 <div id="{{.Name}}" class="panel-collapse collapse in">
                     <table class="panel-body table table-condensed tests" suite="{{.Name}}">
                         {{range .Tests}}
                             <tr>
                                 <td class="name"><button data-test-file="{{$testFile}}" test="{{.Name}}" class="leftbutton btn btn-success btn-xs">Run</button>&nbsp;&nbsp;{{ .Name }}</td>
-                                <td class="result"></td>
-                                <td><button data-test-file="{{$testFile}}" test="{{.Name}}" class="pull-right btn btn-success btn-xs">Run</button></td>
+                                <td class="result"><a href="#"></a></td>
+                                <td class="rightCol"><button data-test-file="{{$testFile}}" test="{{.Name}}" class="pull-right btn btn-success btn-xs">Run</button></td>
                             </tr>
                         {{end}}
                     </table>
@@ -96,9 +98,10 @@
     });
 
     $("#allTestResults").click(function() {
-        var badRow = $("tr.failed").get(0);
-        if (badRow !== undefined) 
-            badRow.scrollIntoView();
+        var badRows = $("tr.failed");
+        if (badRows.length >= 0) {
+            badRows[0].scrollIntoView();
+        }
 
         return false;
     });
@@ -108,6 +111,11 @@
         var button = $(this).addClass("disabled").text("Running");
         $(this).closest("tr").removeClass("passed").removeClass("failed");
         addToQueue(button);
+    });
+
+    $("td.result a").click(function() { //show/hide the extended error div
+        $(this).siblings().toggle();
+        return false;
     });
 
     $("button[test-file]").click(function() {
@@ -155,19 +163,26 @@
         var test = button.attr("test");
         var row = button.parents("tr");
         var resultCell = row.children(".result");
+        $("a", resultCell).text("");
+        $("div.panel-default", resultCell).remove();
         $.ajax({
             dataType: "json",
             url: "{{url `Root`}}/@tests/"+suite+"/"+test,
             success: function(result) {
                 row.attr("class", result.Passed ? "passed" : "failed");
                 if (result.Passed) {
-                    console.log("pass: " + result.Name);
                     passCount++;
-                    resultCell.html("");
                 } else {
                     console.log("fail: result.Name");
                     failCount++;
-                    resultCell.html(result.ErrorHtml);
+                    var resultLnk = $("a", resultCell);
+                    $(resultLnk).text(result.ErrorSummary);
+                    resultCell.append(result.ErrorHTML);
+
+                    var pnlDiv = row.closest("div");
+                    if ($(pnlDiv).hasClass("in") == false) {
+                        $("#link-" + suite).click();
+                    }
 
                     $("#result_" + suite + "_" + test + " pre code").each(function(i, block) {
                         hljs.highlightBlock(block);
