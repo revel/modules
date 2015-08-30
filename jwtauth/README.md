@@ -1,0 +1,1 @@
+# JWT Auth module for Revel
