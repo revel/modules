@@ -180,7 +180,8 @@ func IsInBlocklist(token string) bool {
 Filter AuthFilter is Revel Filter for JWT Auth Token verification
 Register it in the revel.Filters in <APP_PATH>/app/init.go
 
-Add jwt.AuthFilter anywhere demeed appropriate, it must be register after revel.PanicFilter
+Add jwt.AuthFilter anywhere deemed appropriate, it must be register after revel.PanicFilter
+
 	revel.Filters = []revel.Filter{
 		revel.PanicFilter,
 		...
