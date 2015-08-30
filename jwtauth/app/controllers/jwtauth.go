@@ -12,11 +12,11 @@ import (
 	"github.com/revel/revel/cache"
 )
 
-type Auth struct {
+type JwtAuth struct {
 	*revel.Controller
 }
 
-func (c *Auth) Token() revel.Result {
+func (c *JwtAuth) Token() revel.Result {
 	user, err := c.parseUserInfo()
 	if err != nil {
 		revel.ERROR.Printf("Unable to read user info %q", err)
@@ -51,7 +51,7 @@ func (c *Auth) Token() revel.Result {
 	})
 }
 
-func (c *Auth) RefreshToken() revel.Result {
+func (c *JwtAuth) RefreshToken() revel.Result {
 	claims := c.Args[jwt.TOKEN_CLAIMS_KEY].(map[string]interface{})
 	revel.INFO.Printf("Claims: %q", claims)
 
@@ -74,7 +74,7 @@ func (c *Auth) RefreshToken() revel.Result {
 	})
 }
 
-func (c *Auth) Logout() revel.Result {
+func (c *JwtAuth) Logout() revel.Result {
 	// Auth token will be added to blocklist for remaining token validitity period
 	// Let's token is valid for another 10 minutes, then it reside 10 mintues in the blocklist
 	go addToBlocklist(c.Request, c.Args[jwt.TOKEN_CLAIMS_KEY].(map[string]interface{}))
@@ -86,7 +86,7 @@ func (c *Auth) Logout() revel.Result {
 }
 
 // Private methods
-func (c *Auth) parseUserInfo() (*models.User, error) {
+func (c *JwtAuth) parseUserInfo() (*models.User, error) {
 	rUser := &models.User{}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(rUser)

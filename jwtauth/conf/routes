@@ -1,4 +1,4 @@
 # JWT Auth Routes
-POST	/token									Auth.Token
-GET		/refresh-token							Auth.RefreshToken
-GET		/logout									Auth.Logout
+POST	/token									JwtAuth.Token
+GET		/refresh-token							JwtAuth.RefreshToken
+GET		/logout									JwtAuth.Logout

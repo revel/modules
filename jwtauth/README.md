@@ -21,9 +21,9 @@ Add `module.jwtauth = github.com/jeevatkm/jwtauth` into `conf/app.conf`
 Add `module:jwtauth` into `conf/routes`. Auth modules enables following routes
 ```sh
 # JWT Auth Routes
-POST	/token									Auth.Token
-GET		/refresh-token							Auth.RefreshToken
-GET		/logout									Auth.Logout
+POST	/token									JwtAuth.Token
+GET		/refresh-token							JwtAuth.RefreshToken
+GET		/logout									JwtAuth.Logout
 ```
 
 ### Registering Auth Filter
