@@ -12,3 +12,12 @@ $ revel run github.com/jeevatkm/jwtauth-example
 
 # now application will be running http://localhost:9000
 ```
+
+### How to create Key files?
+```sh
+# generating private key file
+$ openssl genrsa -out private.rsa 2048
+
+# creating a public from private key we generated above
+$ openssl rsa -in private.rsa -pubout > public.rsa.pub
+```
