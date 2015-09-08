@@ -83,6 +83,7 @@ revel.OnAppStart(func() {
 		// such as User Id, user email address, etc.
 		
 		userId := 100001
+		authenticated := true  			// Auth success
 
 		return fmt.Sprintf("%d", userId), authenticated
 	}))
