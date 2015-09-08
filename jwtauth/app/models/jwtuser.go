@@ -1,6 +1,6 @@
 package models
 
-type User struct {
+type JwtUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }

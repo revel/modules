@@ -11,7 +11,7 @@
 		{
 			"env":
 			{
-				"GOPATH": "$HOME/Documents/scm/revel:$GS_GOPATH"
+				"GOPATH": "$HOME/Documents/scm/go-workspace:$GS_GOPATH"
 			}
 		}
 	}

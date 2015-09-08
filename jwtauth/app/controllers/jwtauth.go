@@ -43,7 +43,7 @@ func (c *JwtAuth) Token() revel.Result {
 	}
 
 	c.Response.Status = http.StatusUnauthorized
-	c.Response.Out.Header().Set("WWW-Authenticate", jwt.Realm)
+	c.Response.Out.Header().Set("Www-Authenticate", jwt.Realm)
 
 	return c.RenderJson(map[string]string{
 		"id":      "unauthorized",
@@ -52,10 +52,10 @@ func (c *JwtAuth) Token() revel.Result {
 }
 
 func (c *JwtAuth) RefreshToken() revel.Result {
-	claims := c.Args[jwt.TOKEN_CLAIMS_KEY].(map[string]interface{})
+	claims := c.Args[jwt.TokenClaimsKey].(map[string]interface{})
 	revel.INFO.Printf("Claims: %q", claims)
 
-	tokenString, err := jwt.GenerateToken(claims[jwt.SUBJECT_KEY].(string))
+	tokenString, err := jwt.GenerateToken(claims[jwt.SubjectKey].(string))
 	if err != nil {
 		c.Response.Status = http.StatusInternalServerError
 		return c.RenderJson(map[string]string{
@@ -77,7 +77,7 @@ func (c *JwtAuth) RefreshToken() revel.Result {
 func (c *JwtAuth) Logout() revel.Result {
 	// Auth token will be added to blocklist for remaining token validitity period
 	// Let's token is valid for another 10 minutes, then it reside 10 mintues in the blocklist
-	go addToBlocklist(c.Request, c.Args[jwt.TOKEN_CLAIMS_KEY].(map[string]interface{}))
+	go addToBlocklist(c.Request, c.Args[jwt.TokenClaimsKey].(map[string]interface{}))
 
 	return c.RenderJson(map[string]string{
 		"id":      "success",
@@ -86,8 +86,8 @@ func (c *JwtAuth) Logout() revel.Result {
 }
 
 // Private methods
-func (c *JwtAuth) parseUserInfo() (*models.User, error) {
-	rUser := &models.User{}
+func (c *JwtAuth) parseUserInfo() (*models.JwtUser, error) {
+	rUser := &models.JwtUser{}
 	decoder := json.NewDecoder(c.Request.Body)
 	err := decoder.Decode(rUser)
 	return rUser, err
@@ -95,7 +95,7 @@ func (c *JwtAuth) parseUserInfo() (*models.User, error) {
 
 func addToBlocklist(r *revel.Request, claims map[string]interface{}) {
 	tokenString := jwt.GetAuthToken(r)
-	expriyAt := time.Minute * time.Duration(jwt.TokenRemainingValidity(claims[jwt.EXPIRATION_KEY]))
+	expriyAt := time.Minute * time.Duration(jwt.TokenRemainingValidity(claims[jwt.ExpirationKey]))
 
 	cache.Set(tokenString, tokenString, expriyAt)
 }
