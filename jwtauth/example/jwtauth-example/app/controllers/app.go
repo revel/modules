@@ -3,8 +3,8 @@ package controllers
 import (
 	"fmt"
 
-	"github.com/jeevatkm/jwtauth-example/app/models"
-	"github.com/jeevatkm/jwtauth/app/jwt"
+	"github.com/revel/modules/jwtauth/app/jwt"
+	"github.com/revel/modules/jwtauth/example/jwtauth-example/app/models"
 	"github.com/revel/revel"
 )
 

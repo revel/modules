@@ -6,11 +6,9 @@ Ready to see JWT Auth module in action. It demonstrates the JWT Auth Module usag
 ```sh
 $ cd $GOPATH
 
-$ go get github.com/jeevatkm/jwtauth
+$ go get github.com/revel/modules
 
-$ ln -s $GOPATH/src/github.com/jeevatkm/jwtauth/example/jwtauth-example $GOPATH/src/github.com/jeevatkm/jwtauth-example
-
-$ revel run github.com/jeevatkm/jwtauth-example
+$ revel run github.com/revel/modules/jwtauth/example/jwtauth-example
 
 # now application will be running http://localhost:9000
 ```

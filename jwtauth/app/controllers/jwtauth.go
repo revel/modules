@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jeevatkm/jwtauth/app/jwt"
-	"github.com/jeevatkm/jwtauth/app/models"
+	"github.com/revel/modules/jwtauth/app/jwt"
+	"github.com/revel/modules/jwtauth/app/models"
 
 	"github.com/revel/revel"
 	"github.com/revel/revel/cache"

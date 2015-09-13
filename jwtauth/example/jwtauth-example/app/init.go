@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/jeevatkm/jwtauth/app/jwt"
+	"github.com/revel/modules/jwtauth/app/jwt"
 	"github.com/revel/revel"
 )
 
