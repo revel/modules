@@ -37,6 +37,7 @@ auth.jwt.key.public = "/Users/jeeva/rsa_public.pem"
 #auth.jwt.key.hmac = "1A39B778C0CE40B1B32585CF846F61B1"
 
 # Valid regexp allowed for path
+# Internally it will end up like this "^(/$|/token|/register|/(forgot|validate-reset|reset)-password)"
 auth.jwt.anonymous = "/, /token, /register, /(forgot|validate-reset|reset)-password, /freepass/.*"
 ```
 

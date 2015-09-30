@@ -84,20 +84,20 @@ Method Init initializes JWT auth provider based on given config values from app.
 
 	// RSA key files
 	// applicable to RS256, RS384, RS512 signing method and comment out others
-	auth.jwt.key.private = "${GOPATH}/src/github.com/jeevatkm/jwtauth-example/conf/rsa_private.pem"
-	auth.jwt.key.public = "${GOPATH}/src/github.com/jeevatkm/jwtauth-example/conf/rsa_public.pem"
+	auth.jwt.key.private = "/Users/jeeva/rsa_private.pem"
+	auth.jwt.key.public = "/Users/jeeva/rsa_public.pem"
 
 	// Uncomment below two lines for ES256, ES384, ES512 signing method and comment out others
 	// since we  will be use ECDSA
-	#auth.jwt.key.private = "${GOPATH}/src/github.com/jeevatkm/jwtauth-example/conf/ec_private.pem"
-	#auth.jwt.key.public = "${GOPATH}/src/github.com/jeevatkm/jwtauth-example/conf/ec_public.pem"
+	#auth.jwt.key.private = "/Users/jeeva/ec_private.pem"
+	#auth.jwt.key.public = "/Users/jeeva/ec_public.pem"
 
 	// HMAC signing Secret value
 	// Uncomment below line for HS256, HS384, HS512 signing method and comment out others
 	#auth.jwt.key.hmac = "1A39B778C0CE40B1B32585CF846F61B1"
 
 	// Valid regexp allowed for path
-	// Internal it will end up like this "^(/$|/token|/register|/(forgot|validate-reset|reset)-password)"
+	// Internally it will end up like this "^(/$|/token|/register|/(forgot|validate-reset|reset)-password)"
 	auth.jwt.anonymous = "/, /token, /register, /(forgot|validate-reset|reset)-password"
 */
 func Init(authHandler interface{}) {
