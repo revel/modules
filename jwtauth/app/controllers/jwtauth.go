@@ -74,6 +74,15 @@ func (c *JwtAuth) RefreshToken() revel.Result {
 	})
 }
 
+func (c *JwtAuth) ValidateToken() revel.Result {
+	// When request reaches here, then it has valid auth token
+	// else request would have received 401 - Unauthorized response
+	return c.RenderJson(map[string]string{
+		"id":      "success",
+		"message": "Auth token is valid",
+	})
+}
+
 func (c *JwtAuth) Logout() revel.Result {
 	// Auth token will be added to blocklist for remaining token validitity period
 	// Let's token is valid for another 10 minutes, then it reside 10 mintues in the blocklist
