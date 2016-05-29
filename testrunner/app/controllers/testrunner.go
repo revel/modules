@@ -237,10 +237,38 @@ func formatResponse(t testing.TestSuite) map[string]string {
 		return map[string]string{}
 	}
 
+	// Since Go 1.6 http.Request struct contains `Cancel <-chan struct{}` which
+	// results in `json: unsupported type: <-chan struct {}`
+	// So pull out required things for Request and Response
+	req := map[string]interface{}{
+		"Method":        t.Response.Request.Method,
+		"URL":           t.Response.Request.URL,
+		"Proto":         t.Response.Request.Proto,
+		"ContentLength": t.Response.Request.ContentLength,
+		"Header":        t.Response.Request.Header,
+		"Form":          t.Response.Request.Form,
+		"PostForm":      t.Response.Request.PostForm,
+	}
+
+	resp := map[string]interface{}{
+		"Status":           t.Response.Status,
+		"StatusCode":       t.Response.StatusCode,
+		"Proto":            t.Response.Proto,
+		"Header":           t.Response.Header,
+		"ContentLength":    t.Response.ContentLength,
+		"TransferEncoding": t.Response.TransferEncoding,
+	}
+
 	// Beautify the response JSON to make it human readable.
-	resp, err := json.MarshalIndent(t.Response, "", "  ")
+	respBytes, err := json.MarshalIndent(
+		map[string]interface{}{
+			"Response": resp,
+			"Request":  req,
+		},
+		"",
+		"   ")
 	if err != nil {
-		revel.ERROR.Println(err)
+		fmt.Println(err)
 	}
 
 	// Remove extra new line symbols so they do not take too much space on a result page.
@@ -249,7 +277,7 @@ func formatResponse(t testing.TestSuite) map[string]string {
 	body = strings.Replace(body, "\r\n\r\n", "\r\n", -1)
 
 	return map[string]string{
-		"Headers": string(resp),
+		"Headers": string(respBytes),
 		"Body":    strings.TrimSpace(body),
 	}
 }
