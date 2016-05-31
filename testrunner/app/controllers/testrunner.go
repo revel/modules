@@ -68,7 +68,24 @@ var (
 
 // Index is an action which renders the full list of available test suites and their tests.
 func (c TestRunner) Index() revel.Result {
+	c.RenderArgs["suiteFound"] = len(testSuites) > 0
 	return c.Render(testSuites)
+}
+
+// Suite method allows user to navigate to individual Test Suite and their tests
+func (c TestRunner) Suite(suite string) revel.Result {
+	var foundTestSuites []TestSuiteDesc
+	for _, testSuite := range testSuites {
+		if strings.EqualFold(testSuite.Name, suite) {
+			foundTestSuites = append(foundTestSuites, testSuite)
+		}
+	}
+
+	c.RenderArgs["testSuites"] = foundTestSuites
+	c.RenderArgs["suiteFound"] = len(foundTestSuites) > 0
+	c.RenderArgs["suiteName"] = suite
+
+	return c.RenderTemplate("TestRunner/Index.html")
 }
 
 // Run runs a single test, given by the argument.
