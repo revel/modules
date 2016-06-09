@@ -1,4 +1,8 @@
-// This module configures a database connection for the application.
+// Copyright (c) 2012-2016 The Revel Framework Authors, All rights reserved.
+// Revel Framework source code and usage is governed by a MIT style
+// license that can be found in the LICENSE file.
+
+// Package db module configures a database connection for the application.
 //
 // Developers use this module by importing and calling db.Init().
 // A "Transactional" controller type is provided as a way to import interceptors
@@ -11,15 +15,18 @@ package db
 
 import (
 	"database/sql"
+
 	"github.com/revel/revel"
 )
 
+// Database connection variables
 var (
 	Db     *sql.DB
 	Driver string
 	Spec   string
 )
 
+// Init method used to initialize DB module on `OnAppStart`
 func Init() {
 	// Read configuration.
 	var found bool
@@ -38,6 +45,7 @@ func Init() {
 	}
 }
 
+// Transactional definition for database transaction
 type Transactional struct {
 	*revel.Controller
 	Txn *sql.Tx

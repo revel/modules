@@ -1,3 +1,7 @@
+// Copyright (c) 2012-2016 The Revel Framework Authors, All rights reserved.
+// Revel Framework source code and usage is governed by a MIT style
+// license that can be found in the LICENSE file.
+
 package controllers
 
 import (
@@ -118,7 +122,7 @@ func (c TestRunner) Run(suite, test string) revel.Result {
 				// Render the error and save to the result structure.
 				var buffer bytes.Buffer
 				tmpl, _ := revel.MainTemplateLoader.Template("TestRunner/FailureDetail.html")
-				tmpl.Render(&buffer, map[string]interface{}{
+				_ = tmpl.Render(&buffer, map[string]interface{}{
 					"error":    panicErr,
 					"response": res,
 					"postfix":  suite + "_" + test,
@@ -209,21 +213,21 @@ func describeSuite(testSuite interface{}) TestSuiteDesc {
 
 // errorSummary gets an error and returns its summary in human readable format.
 func errorSummary(err *revel.Error) (message string) {
-	expected_prefix := "(expected)"
-	actual_prefix := "(actual)"
+	expectedPrefix := "(expected)"
+	actualPrefix := "(actual)"
 	errDesc := err.Description
 	//strip the actual/expected stuff to provide more condensed display.
-	if strings.Index(errDesc, expected_prefix) == 0 {
-		errDesc = errDesc[len(expected_prefix):len(errDesc)]
+	if strings.Index(errDesc, expectedPrefix) == 0 {
+		errDesc = errDesc[len(expectedPrefix):]
 	}
-	if strings.LastIndex(errDesc, actual_prefix) > 0 {
-		errDesc = errDesc[0 : len(errDesc)-len(actual_prefix)]
+	if strings.LastIndex(errDesc, actualPrefix) > 0 {
+		errDesc = errDesc[0 : len(errDesc)-len(actualPrefix)]
 	}
 
 	errFile := err.Path
 	slashIdx := strings.LastIndex(errFile, "/")
 	if slashIdx > 0 {
-		errFile = errFile[slashIdx+1 : len(errFile)]
+		errFile = errFile[slashIdx+1:]
 	}
 
 	message = fmt.Sprintf("%s %s#%d", errDesc, errFile, err.Line)
