@@ -149,13 +149,13 @@ func (c TestRunner) Run(suite, test string) revel.Result {
 		result.Passed = true
 	}()
 
-	return c.RenderJson(result)
+	return c.RenderJSON(result)
 }
 
 // List returns a JSON list of test suites and tests.
 // It is used by revel test command line tool.
 func (c TestRunner) List() revel.Result {
-	return c.RenderJson(testSuites)
+	return c.RenderJSON(testSuites)
 }
 
 /*
