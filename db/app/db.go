@@ -24,10 +24,10 @@ func Init() {
 	// Read configuration.
 	var found bool
 	if Driver, found = revel.Config.String("db.driver"); !found {
-		revel.ERROR.Fatal("No db.driver found.")
+		revel.ERROR.Fatal("db.driver not configured")
 	}
 	if Spec, found = revel.Config.String("db.spec"); !found {
-		revel.ERROR.Fatal("No db.spec found.")
+		revel.ERROR.Fatal("db.spec not configured")
 	}
 
 	// Open a connection.
