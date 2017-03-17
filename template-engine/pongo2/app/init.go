@@ -11,7 +11,6 @@ import (
 
 // Adapter for HAML Templates.
 type PongoTemplate struct {
-    name     string
     template *p2.Template
     engine   *PongoEngine
     *revel.BaseTemplate
@@ -42,7 +41,7 @@ func (i *INodeImplied) Execute(ctx *p2.ExecutionContext, w p2.TemplateWriter) *p
 
 }
 func (tmpl PongoTemplate) Name() string {
-    return tmpl.name
+    return tmpl.TemplateName
 }
 func getContext() map[string]interface{} {
     return gls.Get("data").(map[string]interface{})
@@ -56,7 +55,7 @@ func (tmpl PongoTemplate) Render(wr io.Writer, arg interface{}) (err error) {
             if e, ok := err.(*p2.Error); ok {
                 rerr := &revel.Error{
                     Title:       "Template Execution Error",
-                    Path:        tmpl.name,
+                    Path:        tmpl.TemplateName,
                     Description: e.Error(),
                     Line:        e.Line,
                     //SourceLines: tmpl.Content(),
@@ -89,30 +88,29 @@ type PongoEngine struct {
     templates             map[string]*PongoTemplate
 }
 
-func (engine *PongoEngine) ParseAndAdd(templateName string, templateSource []byte, basePath *revel.BaseTemplate) error {
-    templateSet := engine.templateSetBybasePath[basePath.Location()]
+func (engine *PongoEngine) ParseAndAdd(baseTemplate *revel.BaseTemplate) error {
+    templateSet := engine.templateSetBybasePath[baseTemplate.BasePath]
     if nil == templateSet {
-        templateSet = p2.NewSet(basePath.Location(), p2.MustNewLocalFileSystemLoader(basePath.Location()))
-        engine.templateSetBybasePath[basePath.Location()] = templateSet
+        templateSet = p2.NewSet(baseTemplate.BasePath, p2.MustNewLocalFileSystemLoader(baseTemplate.BasePath))
+        engine.templateSetBybasePath[baseTemplate.BasePath] = templateSet
     }
 
-    tpl, err := templateSet.FromBytes(templateSource)
+    tpl, err := templateSet.FromBytes(baseTemplate.FileBytes)
     if nil != err {
         _, line, description := parsePongo2Error(err)
         return &revel.Error{
             Title:       "Template Compilation Error",
-            Path:        templateName,
+            Path:        baseTemplate.FilePath,
             Description: description,
             Line:        line,
-            SourceLines: strings.Split(string(templateSource), "\n"),
+            SourceLines: strings.Split(string(baseTemplate.FileBytes), "\n"),
         }
     }
 
-    engine.templates[templateName] = &PongoTemplate{
-        name:         templateName,
+    engine.templates[baseTemplate.TemplateName] = &PongoTemplate{
         template:     tpl,
         engine:       engine,
-        BaseTemplate: basePath}
+        BaseTemplate: baseTemplate}
     return nil
 }
 func (engine *PongoEngine) Name() string {
