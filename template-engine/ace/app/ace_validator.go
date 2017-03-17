@@ -52,14 +52,16 @@ func AceValidate(fileData []byte) (line int,err error){
         if err!=nil {
            return
         }
-        parsedLine := newLine(line,string(inline),nil,nil)
+        o:=&ace.Options{}
+        ace.InitializeOptions(o)
+        parsedLine := newLine(line,string(inline),o,nil)
         if !parsedLine.isEmpty() &&
             !parsedLine.isHelperMethod() &&
             !parsedLine.isPlainText() &&
             !parsedLine.isComment() &&
             !parsedLine.isHTMLComment() &&
             !parsedLine.isAction() {
-            err= fmt.Errorf("Unknow line entry at %d" ,line)
+            err= fmt.Errorf("Unknow line entry '%s' at %d",string(inline) ,line)
             return
         }
         line ++
