@@ -6,7 +6,6 @@ import (
 	"github.com/yosssi/ace"
 	"html/template"
 	"io"
-	"strings"
 )
 
 const ACE_TEMPLATE = "ace"
@@ -67,10 +66,6 @@ func (acetmpl AceTemplate) renderInternal(wr io.Writer, arg interface{}) error {
 	}
 	return acetmpl.Execute(wr, arg)
 }
-func (acetmpl AceTemplate) Content() []string {
-	content, _ := revel.ReadLines(acetmpl.engine.loader.TemplatePaths[acetmpl.Name()])
-	return content
-}
 
 type AceEngine struct {
     revel.BaseTemplateEngine
@@ -89,18 +84,19 @@ func (engine *AceEngine) ParseAndAdd(baseTemplate *revel.BaseTemplate) error {
 			Path:        baseTemplate.FilePath,
 			Description: "Not correct template for engine",
 			Line:        1,
-			SourceLines: strings.Split(string(baseTemplate.FileBytes), "\n"),
+			SourceLines: baseTemplate.Content(),
 		}
 	}
 
+    baseTemplate.TemplateName = engine.ConvertPath(baseTemplate.TemplateName)
 	file := ace.NewFile(baseTemplate.TemplateName, baseTemplate.FileBytes)
 	engine.files = append(engine.files, file)
-	engine.templatesByName[strings.ToLower(baseTemplate.TemplateName)] = &AceTemplate{File: file, engine: engine, BaseTemplate: baseTemplate}
+	engine.templatesByName[baseTemplate.TemplateName] = &AceTemplate{File: file, engine: engine, BaseTemplate: baseTemplate}
 	return nil
 }
 
 func (engine *AceEngine) Lookup(templateName string) revel.Template {
-	if tpl, found := engine.templatesByName[strings.ToLower(templateName)]; found {
+	if tpl, found := engine.templatesByName[engine.ConvertPath(templateName)]; found {
 
 		return tpl
 	}
@@ -114,6 +110,7 @@ func (engine *AceEngine) Event(action string, i interface{})  {
 	if action == revel.TEMPLATE_REFRESH {
 		// At this point all the templates have been passed into the
         engine.templatesByName=map[string]*AceTemplate{}
+        engine.CaseInsensitiveMode = revel.Config.StringDefault("ace.template.path","lower")!="case"
 	}
 }
 func init() {

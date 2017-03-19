@@ -60,16 +60,17 @@ func tagOptionParser(doc *p2.Parser, start *p2.Token, arguments *p2.Parser) (p2.
         if err != nil {
             return nil, err
         }
-    return &INodeImplied{Exec: func(ctx *p2.ExecutionContext,w p2.TemplateWriter) *p2.Error {
 
+    var v *tagOptionNode
         if sToken := arguments.MatchType(p2.TokenString); nil != sToken {
-            v := &tagOptionNode{Pongo2BaseTag:Pongo2BaseTag{field: field},
+            v = &tagOptionNode{Pongo2BaseTag:Pongo2BaseTag{field: field},
                 value: expr,
                 label: sToken.Val}
-            return v.Execute(ctx, w)
         } else {
-            return arguments.Error("Expected an string.", nil)
+            return nil, arguments.Error("Expected an string.", nil)
         }
+    return &INodeImplied{Exec: func(ctx *p2.ExecutionContext,w p2.TemplateWriter) *p2.Error {
+        return v.Execute(ctx, w)
     }}, nil
 }
 

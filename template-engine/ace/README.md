@@ -1,6 +1,17 @@
 # Ace 
  The [ACE](https://github.com/yosssi/ace) Templating Plugin
 
+- Ace files must be identified by using a `shebang` on the first line 
+(preferred method) or changing the file extension to home.ace.html. 
+ By default the operation of revel assumes just a `.html` extension for
+ controller responses so it would make more sense to use the shebang
+- Ace templates can be set to be case sensitive by setting
+`ace.tempate=case`, default is not case sensitive. If case sensitivity
+is off internal imports must be done using lower case
+- All function registered in `revel.TemplateFuncs` are available for use 
+inside the ace framework
+
+##### Details
 Ace is a little different of a templating system, its output is a 
 standard go template but there is no concept of template sets, 
 instead you build a composite template using
@@ -42,3 +53,4 @@ the inner template using the outer template.
  template itself by either using the shebang method on the first line
  like `#! ace` or having the file name like `template.ace.html` 
  either method will work. 
+
