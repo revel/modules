@@ -58,7 +58,6 @@ func (tmpl PongoTemplate) Render(wr io.Writer, arg interface{}) (err error) {
                     Path:        tmpl.TemplateName,
                     Description: e.Error(),
                     Line:        e.Line,
-                    //SourceLines: tmpl.Content(),
                 }
                 if revel.DevMode {
                     rerr.SourceLines = tmpl.Content()
@@ -66,18 +65,8 @@ func (tmpl PongoTemplate) Render(wr io.Writer, arg interface{}) (err error) {
                 err = rerr
             }
         }
-
     })
     return err
-}
-
-func (tmpl PongoTemplate) Content() []string {
-    pa, ok := tmpl.engine.loader.TemplatePaths[tmpl.Name()]
-    if !ok {
-        pa, ok = tmpl.engine.loader.TemplatePaths[strings.ToLower(tmpl.Name())]
-    }
-    content, _ := revel.ReadLines(pa)
-    return content
 }
 
 // There is only a single instance of the PongoEngine initialized
@@ -106,7 +95,7 @@ func (engine *PongoEngine) ParseAndAdd(baseTemplate *revel.BaseTemplate) error {
             SourceLines: strings.Split(string(baseTemplate.FileBytes), "\n"),
         }
     }
-
+    baseTemplate.TemplateName = engine.ConvertPath(baseTemplate.TemplateName)
     engine.templates[baseTemplate.TemplateName] = &PongoTemplate{
         template:     tpl,
         engine:       engine,
@@ -126,17 +115,18 @@ func parsePongo2Error(err error) (templateName string, line int, description str
 }
 
 func (engine *PongoEngine) Lookup(templateName string) revel.Template {
-    tpl, found := engine.templates[strings.ToLower(templateName)]
+    tpl, found := engine.templates[engine.ConvertPath(templateName)]
     if !found {
         return nil
     }
     return tpl
 }
 func (engine *PongoEngine) Event(action string, i interface{}) {
-    if action == "template-refresh" {
+    if action == revel.TEMPLATE_REFRESH {
         // At this point all the templates have been passed into the
         engine.templateSetBybasePath = map[string]*p2.TemplateSet{}
         engine.templates = map[string]*PongoTemplate{}
+        engine.CaseInsensitiveMode = revel.Config.StringDefault("pongo2.template.path","lower")!="case"
     }
 }
 
