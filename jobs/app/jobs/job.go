@@ -1,12 +1,13 @@
 package jobs
 
 import (
-	"github.com/revel/revel"
-	"github.com/robfig/cron"
 	"reflect"
 	"runtime/debug"
 	"sync"
 	"sync/atomic"
+
+	"github.com/revel/cron"
+	"github.com/revel/revel"
 )
 
 type Job struct {
@@ -16,12 +17,12 @@ type Job struct {
 	running sync.Mutex
 }
 
-const UNNAMED = "(unnamed)"
+const UnNamed = "(unnamed)"
 
 func New(job cron.Job) *Job {
 	name := reflect.TypeOf(job).Name()
 	if name == "Func" {
-		name = UNNAMED
+		name = UnNamed
 	}
 	return &Job{
 		Name:  name,

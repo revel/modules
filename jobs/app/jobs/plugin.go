@@ -2,11 +2,12 @@ package jobs
 
 import (
 	"fmt"
+
+	"github.com/revel/cron"
 	"github.com/revel/revel"
-	"github.com/robfig/cron"
 )
 
-const DEFAULT_JOB_POOL_SIZE = 10
+const DefaultJobPoolSize = 10
 
 var (
 	// Singleton instance of the underlying job scheduler.
@@ -22,7 +23,7 @@ var (
 func init() {
 	MainCron = cron.New()
 	revel.OnAppStart(func() {
-		if size := revel.Config.IntDefault("jobs.pool", DEFAULT_JOB_POOL_SIZE); size > 0 {
+		if size := revel.Config.IntDefault("jobs.pool", DefaultJobPoolSize); size > 0 {
 			workPermits = make(chan struct{}, size)
 		}
 		selfConcurrent = revel.Config.BoolDefault("jobs.selfconcurrent", false)
