@@ -31,7 +31,7 @@ The three template engines `pongo2,ace,go` will be used when rendering
 templates. 
 
 
-### How Revel Picks the Right parser
+### How Revel Picks the Right Template Engine
 The `template-engine` has a method called `IsEngineFor`, which accepts
 the basic template information (path, and content). The engine then
 can return true or false if it can parse the file or not. How it makes
@@ -43,8 +43,13 @@ and if that passes it can register itself for that.
 
 ## File Path Case Sensitivity
 In the past we have maintained an all lower case template path, this
-works in most cases but not all, you can now specify that the template
-modules we provide allow you to switch path sensitivity on or off.
+works in most cases but lead to some confusion. For example if you include
+a file within your template you must type out the file and file path
+in lower case. Now you can now specify if 
+the case sensitivity is on or off. The case sensitivity can be turned on
+by setting an app configuration option per template engine like 
+`go.tempate.path=case` will turn on case sensitivity on the `go` 
+template engine (by default it is off). 
 
 
 ## Go template engine
@@ -59,3 +64,52 @@ need to import it specifically. Below are the documents for it
 is off internal template references must be done using lower case
 - All function registered in `revel.TemplateFuncs` are available for use 
 inside all templates
+
+## Developing your own template engine
+Adding a new template engine to Revel requires that you
+implement the following interface
+
+```
+type TemplateEngine interface {
+	// #ParseAndAdd: prase template string and add template to the set.
+	//   arg: basePath *BaseTemplate
+	ParseAndAdd(basePath *BaseTemplate) error
+
+	// #Lookup: returns Template corresponding to the given templateName
+	//   arg: templateName string
+	Lookup(templateName string) Template
+
+	// #Event: Fired by the template loader when events occur
+	//   arg: event string
+	//   arg: arg interface{}
+	Event(event string,arg interface{})
+
+	// #IsEngineFor: returns true if this engine should be used to parse the file specified in baseTemplate
+	//   arg: engine The calling engine
+	//   arg: baseTemplate The base template
+    IsEngineFor(engine TemplateEngine, baseTemplate *BaseTemplate) bool
+
+	// #Name: Returns the name of the engine
+	Name() string
+}
+```
+
+There is a `BaseTemplateEngine` class which you can use as a base class 
+in your engine which implements the `IsEngineFor` function
+
+The template returned by the Lookup call needs to implement the following
+```
+type Template interface {
+	// #Name: The name of the template.
+	Name() string      // Name of template
+	// #Content: The content of the template as a string (Used in error handling).
+	Content() []string // Content
+	// #Render: Called by the server to render the template out the io.Writer, args contains the arguements to be passed to the template.
+	//   arg: wr io.Writer
+	//   arg: arg interface{}
+	Render(wr io.Writer, arg interface{}) error
+	// #Location: The full path to the file on the disk.
+	Location() string // Disk location
+}
+```
+
