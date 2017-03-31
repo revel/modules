@@ -106,7 +106,7 @@ func (engine *AceEngine) Lookup(templateName string) revel.Template {
 func (engine *AceEngine) Name() string {
 	return ACE_TEMPLATE
 }
-func (engine *AceEngine) Event(action string, i interface{})  {
+func (engine *AceEngine) Event(action int, i interface{})  {
 	if action == revel.TEMPLATE_REFRESH {
 		// At this point all the templates have been passed into the
         engine.templatesByName=map[string]*AceTemplate{}
