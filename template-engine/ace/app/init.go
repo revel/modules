@@ -26,7 +26,7 @@ func (acetmpl AceTemplate) Render(wr io.Writer, arg interface{}) error {
 	// We can redirect this render to another template if the arguments contain ace_content in them
 	if argmap, ok := arg.(map[string]interface{}); ok {
 		if acecontentraw, ok := argmap["ace-inner"]; ok {
-            acecontent := acecontentraw.(string)
+			acecontent := acecontentraw.(string)
 			newtemplatename := acetmpl.TemplateName + "-" + acecontent
 			// Now lookup the template again
 			if _, ok := acetmpl.engine.templatesByName[newtemplatename]; !ok {
@@ -49,9 +49,9 @@ func (acetmpl AceTemplate) Render(wr io.Writer, arg interface{}) error {
 func (acetmpl AceTemplate) renderInternal(wr io.Writer, arg interface{}) error {
 	if acetmpl.Template == nil {
 		// Compile the template first
-        if acetmpl.Inner==nil {
-            acetmpl.Inner = ace.NewFile("",nil)
-        }
+		if acetmpl.Inner == nil {
+			acetmpl.Inner = ace.NewFile("", nil)
+		}
 		source := ace.NewSource(acetmpl.File, acetmpl.Inner, acetmpl.engine.files)
 		result, err := ace.ParseSource(source, acetmpl.engine.Options)
 
@@ -68,7 +68,7 @@ func (acetmpl AceTemplate) renderInternal(wr io.Writer, arg interface{}) error {
 }
 
 type AceEngine struct {
-    revel.BaseTemplateEngine
+	revel.BaseTemplateEngine
 	loader          *revel.TemplateLoader
 	templatesByName map[string]*AceTemplate
 	files           []*ace.File
@@ -76,7 +76,7 @@ type AceEngine struct {
 }
 
 func (engine *AceEngine) ParseAndAdd(baseTemplate *revel.BaseTemplate) error {
-//	line, err := AceValidate(baseTemplate.FileBytes)
+	//	line, err := AceValidate(baseTemplate.FileBytes)
 
 	if baseTemplate.EngineType != ACE_TEMPLATE {
 		return &revel.Error{
@@ -88,7 +88,7 @@ func (engine *AceEngine) ParseAndAdd(baseTemplate *revel.BaseTemplate) error {
 		}
 	}
 
-    baseTemplate.TemplateName = engine.ConvertPath(baseTemplate.TemplateName)
+	baseTemplate.TemplateName = engine.ConvertPath(baseTemplate.TemplateName)
 	file := ace.NewFile(baseTemplate.TemplateName, baseTemplate.FileBytes)
 	engine.files = append(engine.files, file)
 	engine.templatesByName[baseTemplate.TemplateName] = &AceTemplate{File: file, engine: engine, BaseTemplate: baseTemplate}
@@ -106,11 +106,11 @@ func (engine *AceEngine) Lookup(templateName string) revel.Template {
 func (engine *AceEngine) Name() string {
 	return ACE_TEMPLATE
 }
-func (engine *AceEngine) Event(action int, i interface{})  {
+func (engine *AceEngine) Event(action int, i interface{}) {
 	if action == revel.TEMPLATE_REFRESH {
 		// At this point all the templates have been passed into the
-        engine.templatesByName=map[string]*AceTemplate{}
-        engine.CaseInsensitiveMode = revel.Config.StringDefault("ace.template.path","lower")!="case"
+		engine.templatesByName = map[string]*AceTemplate{}
+		engine.CaseInsensitiveMode = revel.Config.StringDefault("ace.template.path", "lower") != "case"
 	}
 }
 func init() {
@@ -119,7 +119,7 @@ func init() {
 		return &AceEngine{
 			loader:          loader,
 			templatesByName: map[string]*AceTemplate{},
-            Options: &ace.Options{FuncMap:revel.TemplateFuncs},
+			Options:         &ace.Options{FuncMap: revel.TemplateFuncs},
 		}, nil
 	})
 }

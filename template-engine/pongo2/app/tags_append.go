@@ -1,8 +1,8 @@
 package pongo2
 
 import (
-	"reflect"
 	p2 "github.com/flosch/pongo2"
+	"reflect"
 )
 
 type tagAppendNode struct {
@@ -14,8 +14,8 @@ type tagAppendNode struct {
 func (node *tagAppendNode) Execute(ctx *p2.ExecutionContext, writer p2.TemplateWriter) *p2.Error {
 	var values []interface{}
 	var reflectValues reflect.Value
-    found := false
-	if o, found:= ctx.Public[node.name]; found && nil != o {
+	found := false
+	if o, found := ctx.Public[node.name]; found && nil != o {
 		values, _ = o.([]interface{})
 		if nil == values {
 			reflectValues = reflect.ValueOf(o)
@@ -33,7 +33,7 @@ func (node *tagAppendNode) Execute(ctx *p2.ExecutionContext, writer p2.TemplateW
 		if err != nil {
 			return err
 		}
-		if !found  || reflectValues.IsNil() {
+		if !found || reflectValues.IsNil() {
 			values = append(values, obj)
 		} else {
 			reflectValues = reflect.AppendSlice(reflectValues, reflect.ValueOf(obj))

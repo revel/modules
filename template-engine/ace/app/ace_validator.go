@@ -1,15 +1,16 @@
 package app
+
 // Validate the ace file
 
 // External ace has no accessable validation methods, so this is just a copy and paste of a couple of reads that
 // occur within ace to
 
 import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"github.com/yosssi/ace"
 	"strings"
-    "github.com/yosssi/ace"
-    "bytes"
-    "bufio"
-    "fmt"
 )
 
 const unicodeSpace = 32
@@ -41,34 +42,35 @@ const (
 	bracketClose = "]"
 )
 
-func AceValidate(fileData []byte) (line int,err error){
-    bytes.NewBuffer(fileData)
-    reader := bytes.NewReader(fileData)
-    scanner := bufio.NewReader(reader)
+func AceValidate(fileData []byte) (line int, err error) {
+	bytes.NewBuffer(fileData)
+	reader := bytes.NewReader(fileData)
+	scanner := bufio.NewReader(reader)
 
-    for {
-        var inline []byte
-        inline,_,err = scanner.ReadLine()
-        if err!=nil {
-           return
-        }
-        o:=&ace.Options{}
-        ace.InitializeOptions(o)
-        parsedLine := newLine(line,string(inline),o,nil)
-        if !parsedLine.isEmpty() &&
-            !parsedLine.isHelperMethod() &&
-            !parsedLine.isPlainText() &&
-            !parsedLine.isComment() &&
-            !parsedLine.isHTMLComment() &&
-            !parsedLine.isAction() {
-            err= fmt.Errorf("Unknow line entry '%s' at %d",string(inline) ,line)
-            return
-        }
-        line ++
+	for {
+		var inline []byte
+		inline, _, err = scanner.ReadLine()
+		if err != nil {
+			return
+		}
+		o := &ace.Options{}
+		ace.InitializeOptions(o)
+		parsedLine := newLine(line, string(inline), o, nil)
+		if !parsedLine.isEmpty() &&
+			!parsedLine.isHelperMethod() &&
+			!parsedLine.isPlainText() &&
+			!parsedLine.isComment() &&
+			!parsedLine.isHTMLComment() &&
+			!parsedLine.isAction() {
+			err = fmt.Errorf("Unknow line entry '%s' at %d", string(inline), line)
+			return
+		}
+		line++
 
-    }
+	}
 
 }
+
 // line represents a line of codes.
 type line struct {
 	no     int
@@ -119,7 +121,6 @@ func (l *line) isAction() bool {
 	str := strings.TrimSpace(l.str)
 	return strings.HasPrefix(str, l.opts.DelimLeft) && strings.HasSuffix(str, l.opts.DelimRight)
 }
-
 
 // newLine creates and returns a line.
 func newLine(no int, str string, opts *ace.Options, f *ace.File) *line {
