@@ -10,6 +10,7 @@ import (
     "time"
     "net"
     "net/http"
+    "strconv"
 )
 
 type ServerFastHTTP struct {
@@ -86,7 +87,6 @@ func (f *ServerFastHTTP) RequestHandler(ctx *fasthttp.RequestCtx) {
 	request.Set(ctx)
 	response.Set(ctx)                 
     f.ServerInit.Callback(response, request, nil)
-
 }
 
 
@@ -129,6 +129,7 @@ type (
 	FastHttpResponse struct {
 		Original *fasthttp.RequestCtx
 		header   *FastHttpHeader
+        Writer   io.Writer
 	}
 	FastHttpMultipartForm struct {
 		Form *multipart.Form
@@ -225,15 +226,54 @@ func (r *FastHttpResponse) Header() revel.ServerHeader {
 func (r *FastHttpResponse) GetRaw() interface{} {
 	return r.Original
 }
+func (r *FastHttpResponse) WriteStream(name string, contentlen int64, modtime time.Time,reader io.Reader) error {
 
+    // do a simple io.Copy, we do it directly into the writer which may be configured to be a compressed
+    // writer
+    ius := r.Original.Request.Header.Peek("If-Unmodified-Since")
+    if t, err := http.ParseTime(string(ius)); ius!=nil && err == nil && !modtime.IsZero() {
+        // The Date-Modified header truncates sub-second precision, so
+        // use mtime < t+1s instead of mtime <= t to check for unmodified.
+        if modtime.Before(t.Add(1 * time.Second)) {
+            h := r.Original.Response.Header
+            h.Del("Content-Type")
+            h.Del("Content-Length")
+            if h.Peek("Etag") != nil {
+                h.Del("Last-Modified")
+            }
+            h.SetStatusCode(http.StatusNotModified)
+            return nil
+        }
+    }
+
+    if contentlen != -1 {
+        r.Original.Response.Header.Set("Content-Length", strconv.FormatInt(contentlen, 10))
+    }
+    if _, err := io.Copy(r.Writer, reader); err != nil {
+       r.Original.Response.Header.SetStatusCode(http.StatusInternalServerError)
+       return err
+    } else {
+       r.Original.Response.Header.SetStatusCode(http.StatusOK)
+    }
+
+    return nil
+}
 func (r *FastHttpResponse) Destroy() {
+    if c,ok:=r.Writer.(io.Closer);ok {
+        c.Close()
+    }
 	r.header.Source = nil
 	r.Original = nil
+    r.Writer = nil
 
 }
 func (r *FastHttpResponse) Set(w *fasthttp.RequestCtx) {
 	r.Original = w
 	r.header.Source = r
+    r.Writer = w.Response.BodyWriter()
+}
+func (r *FastHttpResponse) SetWriter(writer io.Writer) {
+    r.Writer = writer
 }
 func (r *FastHttpHeader) SetCookie(cookie string) {
 	if r.isResponse {
