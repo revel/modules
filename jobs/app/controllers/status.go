@@ -13,10 +13,10 @@ type Jobs struct {
 }
 
 func (c Jobs) Status() revel.Result {
-	remoteAddress := c.Request.RemoteAddr
+	remoteAddress := c.ClientIP
 	if revel.Config.BoolDefault("jobs.acceptproxyaddress", false) {
-		if proxiedAddress, isProxied := c.Request.Header["X-Forwarded-For"]; isProxied {
-			remoteAddress = proxiedAddress[0]
+		if proxiedAddress := c.Request.ServerHeader.Get("X-Forwarded-For"); proxiedAddress != "" {
+			remoteAddress = proxiedAddress
 		}
 	}
 	if !strings.HasPrefix(remoteAddress, "127.0.0.1") &&
