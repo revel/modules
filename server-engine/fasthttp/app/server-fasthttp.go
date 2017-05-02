@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"time"
+    "bytes"
 )
 
 type FastHTTPServer struct {
@@ -203,6 +204,8 @@ func (r *FastHttpRequest) Get(key int) (value interface{}, err error) {
 		value = string(r.Original.Path())
 	case revel.HTTP_HOST:
 		value = string(r.Original.Request.Host())
+    case revel.HTTP_BODY:
+        value = bytes.NewBuffer(r.Original.Request.Body())
 	default:
 		err = revel.ENGINE_UNKNOWN_GET
 	}
