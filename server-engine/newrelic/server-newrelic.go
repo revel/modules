@@ -44,7 +44,7 @@ func (nr *ServerNewRelic) Event(event int, args interface{}) {
 			revel.Filters = append(revel.Filters, NewRelicFilter)
 			copy(revel.Filters[3:], revel.Filters[2:])
 			revel.Filters[2] = NewRelicFilter
-            revel.TRACE.Println("Newrelic filter injected")
+			revel.TRACE.Println("Newrelic filter injected")
 		}
 	case revel.ENGINE_EVENT_STARTUP:
 		// Check to see if configuration is set
@@ -72,8 +72,8 @@ func NewRelicFilter(c *revel.Controller, fc []revel.Filter) {
 	if nr, ok := revel.CurrentEngine.Engine().(*ServerNewRelic); ok {
 		if nr.NewRelicApp != nil {
 			txn := nr.NewRelicApp.StartTransaction(c.Action,
-                c.Response.Out.(*revel.GOResponse).Original,
-                c.Request.In.(*revel.GORequest).Original)
+				c.Response.Out.(*revel.GOResponse).Original,
+				c.Request.In.(*revel.GORequest).Original)
 			defer txn.End()
 		} else {
 			revel.ERROR.Println("Newrelic application not initialized before filter called")

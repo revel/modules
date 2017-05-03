@@ -1,6 +1,7 @@
 package fasthttp
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/revel/revel"
 	"github.com/valyala/fasthttp"
@@ -11,7 +12,6 @@ import (
 	"net/url"
 	"strconv"
 	"time"
-    "bytes"
 )
 
 type FastHTTPServer struct {
@@ -28,11 +28,11 @@ func init() {
 func (f *FastHTTPServer) Init(init *revel.EngineInit) {
 	f.MaxMultipartSize = int64(revel.Config.IntDefault("server.request.max.multipart.filesize", 32)) << 20 /* 32 MB */
 	fastHttpContextStack = revel.NewStackLock(revel.Config.IntDefault("server.context.stack", 100),
-        revel.Config.IntDefault("server.context.maxstack", 200),
-        func() interface{} { return NewFastHttpContext(f) })
+		revel.Config.IntDefault("server.context.maxstack", 200),
+		func() interface{} { return NewFastHttpContext(f) })
 	fastHttpMultipartFormStack = revel.NewStackLock(revel.Config.IntDefault("server.form.stack", 100),
-        revel.Config.IntDefault("server.form.maxstack", 200),
-        func() interface{} { return &FastHttpMultipartForm{} })
+		revel.Config.IntDefault("server.form.maxstack", 200),
+		func() interface{} { return &FastHttpMultipartForm{} })
 
 	requestHandler := func(ctx *fasthttp.RequestCtx) {
 		f.RequestHandler(ctx)
@@ -204,16 +204,16 @@ func (r *FastHttpRequest) Get(key int) (value interface{}, err error) {
 		value = string(r.Original.Path())
 	case revel.HTTP_HOST:
 		value = string(r.Original.Request.Host())
-    case revel.HTTP_BODY:
-        value = bytes.NewBuffer(r.Original.Request.Body())
+	case revel.HTTP_BODY:
+		value = bytes.NewBuffer(r.Original.Request.Body())
 	default:
 		err = revel.ENGINE_UNKNOWN_GET
 	}
 
 	return
 }
-func (r *FastHttpRequest) Set(key int, value interface{}) (bool) {
-    return false
+func (r *FastHttpRequest) Set(key int, value interface{}) bool {
+	return false
 }
 
 func (r *FastHttpRequest) GetQuery() url.Values {
@@ -240,7 +240,7 @@ func (r *FastHttpRequest) GetForm() (url.Values, error) {
 }
 func (r *FastHttpRequest) GetMultipartForm() (revel.ServerMultipartForm, error) {
 	if !r.MultiFormParsed {
-        // TODO Limit size r.Engine.MaxMultipartSize
+		// TODO Limit size r.Engine.MaxMultipartSize
 		form, err := r.Original.MultipartForm()
 		if err != nil {
 			return nil, err
@@ -271,27 +271,27 @@ func (r *FastHttpRequest) Destroy() {
 
 }
 
-func (r *FastHttpResponse) Get(key int) (value interface{}, err error){
-	switch(key) {
-    case revel.HTTP_SERVER_HEADER:
-        value = r.Header()
-    case revel.HTTP_STREAM_WRITER:
-        value = r
-    case revel.HTTP_WRITER:
-        value = r.Writer
-    default :
-        err = revel.ENGINE_UNKNOWN_GET
-    }
-    return
+func (r *FastHttpResponse) Get(key int) (value interface{}, err error) {
+	switch key {
+	case revel.HTTP_SERVER_HEADER:
+		value = r.Header()
+	case revel.HTTP_STREAM_WRITER:
+		value = r
+	case revel.HTTP_WRITER:
+		value = r.Writer
+	default:
+		err = revel.ENGINE_UNKNOWN_GET
+	}
+	return
 }
 
-func (r *FastHttpResponse) Set(key int, value interface{})(set bool){
-	switch(key) {
-    case revel.HTTP_WRITER:
-        r.SetWriter(value.(io.Writer))
-        set = true
-    }
-    return
+func (r *FastHttpResponse) Set(key int, value interface{}) (set bool) {
+	switch key {
+	case revel.HTTP_WRITER:
+		r.SetWriter(value.(io.Writer))
+		set = true
+	}
+	return
 }
 
 func (r *FastHttpResponse) GetWriter() io.Writer {
