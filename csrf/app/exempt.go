@@ -26,7 +26,7 @@ func MarkExempt(route string) {
 }
 
 func IsExempt(c *revel.Controller) bool {
-	if _, ok := exemptPath[strings.ToLower(c.Request.Request.URL.Path)]; ok {
+	if _, ok := exemptPath[strings.ToLower(c.Request.GetPath())]; ok {
 		return true
 	} else if _, ok := exemptAction[c.Action]; ok {
 		return true
