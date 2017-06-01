@@ -6,6 +6,7 @@ import (
 	"github.com/yosssi/ace"
 	"html/template"
 	"io"
+	"strings"
 )
 
 const ACE_TEMPLATE = "ace"
@@ -46,6 +47,7 @@ func (acetmpl AceTemplate) Render(wr io.Writer, arg interface{}) error {
 	}
 	return acetmpl.renderInternal(wr, arg)
 }
+
 func (acetmpl AceTemplate) renderInternal(wr io.Writer, arg interface{}) error {
 	if acetmpl.Template == nil {
 		// Compile the template first
@@ -68,15 +70,27 @@ func (acetmpl AceTemplate) renderInternal(wr io.Writer, arg interface{}) error {
 }
 
 type AceEngine struct {
-	revel.TemplateEngineHelper
-	loader          *revel.TemplateLoader
-	templatesByName map[string]*AceTemplate
-	files           []*ace.File
-	Options         *ace.Options
+	loader              *revel.TemplateLoader
+	templatesByName     map[string]*AceTemplate
+	files               []*ace.File
+	Options             *ace.Options
+	CaseInsensitiveMode bool
+}
+
+func (i *AceEngine) ConvertPath(path string) string {
+	if i.CaseInsensitiveMode {
+		return strings.ToLower(path)
+	}
+	return path
+}
+
+func (i *AceEngine) Handles(templateView *revel.TemplateView) bool {
+	return revel.EngineHandles(i, templateView)
 }
 
 func (engine *AceEngine) ParseAndAdd(baseTemplate *revel.TemplateView) error {
 
+	// Ace templates must only render views specified for it (no trial and error)
 	if baseTemplate.EngineType != ACE_TEMPLATE {
 		return &revel.Error{
 			Title:       "Template Compilation Error",
@@ -105,13 +119,14 @@ func (engine *AceEngine) Lookup(templateName string) revel.Template {
 func (engine *AceEngine) Name() string {
 	return ACE_TEMPLATE
 }
+
 func (engine *AceEngine) Event(action int, i interface{}) {
-	if action == revel.TEMPLATE_REFRESH {
-		// At this point all the templates have been passed into the
+	if action == revel.TEMPLATE_REFRESH_REQUESTED {
 		engine.templatesByName = map[string]*AceTemplate{}
 		engine.CaseInsensitiveMode = revel.Config.StringDefault("ace.template.path", "lower") != "case"
 	}
 }
+
 func init() {
 	revel.RegisterTemplateLoader(ACE_TEMPLATE, func(loader *revel.TemplateLoader) (revel.TemplateEngine, error) {
 
