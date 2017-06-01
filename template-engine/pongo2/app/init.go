@@ -71,10 +71,21 @@ func (tmpl PongoTemplate) Render(wr io.Writer, arg interface{}) (err error) {
 
 // There is only a single instance of the PongoEngine initialized
 type PongoEngine struct {
-	revel.TemplateEngineHelper
 	loader                *revel.TemplateLoader
 	templateSetBybasePath map[string]*p2.TemplateSet
 	templates             map[string]*PongoTemplate
+	CaseInsensitiveMode   bool
+}
+
+func (i *PongoEngine) ConvertPath(path string) string {
+	if i.CaseInsensitiveMode {
+		return strings.ToLower(path)
+	}
+	return path
+}
+
+func (i *PongoEngine) Handles(templateView *revel.TemplateView) bool {
+	return revel.EngineHandles(i, templateView)
 }
 
 func (engine *PongoEngine) ParseAndAdd(baseTemplate *revel.TemplateView) error {
@@ -111,7 +122,7 @@ func parsePongo2Error(err error) (templateName string, line int, description str
 	if nil != pongoError {
 		return pongoError.Filename, pongoError.Line, pongoError.Error()
 	}
-	return "", 0, err.Error()
+	return "Unknown error", 0, err.Error()
 }
 
 func (engine *PongoEngine) Lookup(templateName string) revel.Template {
@@ -122,7 +133,7 @@ func (engine *PongoEngine) Lookup(templateName string) revel.Template {
 	return tpl
 }
 func (engine *PongoEngine) Event(action int, i interface{}) {
-	if action == revel.TEMPLATE_REFRESH {
+	if action == revel.TEMPLATE_REFRESH_REQUESTED {
 		// At this point all the templates have been passed into the
 		engine.templateSetBybasePath = map[string]*p2.TemplateSet{}
 		engine.templates = map[string]*PongoTemplate{}
@@ -139,7 +150,7 @@ func init() {
 		}, nil
 	})
 	/*
-	   // TODO Dynamically call all the built in functions
+	   // TODO Dynamically call all the built in functions, PR welcome
 	   for key,templateFunction := range revel.TemplateFuncs {
 	       p2.RegisterTag(key, func(doc *p2.Parser, start *p2.Token, arguments *p2.Parser) (p2.INodeTag, *p2.Error) {
 	           evals := []p2.IEvaluator{}
