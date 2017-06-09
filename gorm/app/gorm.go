@@ -1,11 +1,11 @@
 package gorm
 
 // # Database config
-// app.dbdriver=sqlite3 # mysql, postgres, sqlite3
-// app.dbhost=localhost  # Use dbhost  /tmp/app.dbdb is your driver is sqlite
-// app.dbuser=dbuser
-// app.dbname=dbname
-// app.dbpassword=dbpassword
+// db.driver=sqlite3 # mysql, postgres, sqlite3
+// db.host=localhost  # Use dbhost  /tmp/app.db is your driver is sqlite
+// db.user=dbuser
+// db.name=dbname
+// db.password=dbpassword
 
 import (
 	"database/sql"
@@ -61,14 +61,14 @@ func InitDBWithParameters(params DbInfo) {
 
 func InitDB() {
 	params := DbInfo{}
-	params.DbDriver = revel.Config.StringDefault("app.dbdriver", "sqlite3")
-	params.DbHost = revel.Config.StringDefault("app.dbhost", "localhost")
+	params.DbDriver = revel.Config.StringDefault("db.driver", "sqlite3")
+	params.DbHost = revel.Config.StringDefault("db.host", "localhost")
 	if params.DbDriver == "sqlite" && params.DbHost == "localhost" {
-		params.DbHost = "/tmp/app.dbdb"
+		params.DbHost = "/tmp/app.db"
 	}
-	params.DbUser = revel.Config.StringDefault("app.dbuser", "default")
-	params.DbPassword = revel.Config.StringDefault("app.dbpassword", "")
-	params.DbName = revel.Config.StringDefault("app.dbname", "default")
+	params.DbUser = revel.Config.StringDefault("db.user", "default")
+	params.DbPassword = revel.Config.StringDefault("db.password", "")
+	params.DbName = revel.Config.StringDefault("db.name", "default")
 
 	InitDBWithParameters(params)
 }
@@ -140,7 +140,7 @@ func (c *GormController) Rollback() revel.Result {
 
 func init() {
 	revel.OnAppStart(func() {
-		if revel.Config.BoolDefault("app.dbautoinit", false) {
+		if revel.Config.BoolDefault("db.autoinit", false) {
 			InitDB()
 			revel.InterceptMethod((*GormController).Begin, revel.BEFORE)
 			revel.InterceptMethod((*GormController).Commit, revel.AFTER)
