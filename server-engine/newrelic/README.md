@@ -1,5 +1,5 @@
 # NewRelic
-This module is the for [NewRelic](http://newrelic.com) it wraps the GO
+This module is the for [NewRelic](http://newrelic.com) it wraps the Go
 http server and inserts a filter to track each requests.
 
 ###App.conf

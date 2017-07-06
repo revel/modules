@@ -8,13 +8,13 @@ import (
 type ServerNewRelic struct {
 	NewRelicConfig *newrelic.Config
 	NewRelicApp    newrelic.Application
-	revel.GOHttpServer
+	revel.GoHttpServer
 }
 
 func init() {
 	revel.RegisterServerEngine("newrelic", func() revel.ServerEngine {
 		nr := &ServerNewRelic{
-			GOHttpServer: revel.GOHttpServer{},
+			GoHttpServer: revel.GoHttpServer{},
 		}
 		config := newrelic.NewConfig("Unknown Application", " Unknown Key ")
 
@@ -24,13 +24,13 @@ func init() {
 
 }
 func (g *ServerNewRelic) Init(init *revel.EngineInit) {
-	g.GOHttpServer.Init(init)
+	g.GoHttpServer.Init(init)
 }
 
 func (nr *ServerNewRelic) Event(event int, args interface{}) {
 
 	switch event {
-	case revel.ENGINE_EVENT_PREINIT:
+	case revel.ENGINE_BEFORE_INITIALIZED:
 		nr.NewRelicConfig.AppName = revel.Config.StringDefault("app.name", "Uknown App")
 
 		license := revel.Config.StringDefault("server.newrelic.license", "")
@@ -48,7 +48,7 @@ func (nr *ServerNewRelic) Event(event int, args interface{}) {
 			revel.Filters[2] = NewRelicFilter
 			revel.TRACE.Println("Newrelic filter injected")
 		}
-	case revel.ENGINE_EVENT_STARTUP:
+	case revel.ENGINE_STARTED:
 		// Check to see if configuration is set
 		// create the application interface
 		app, err := newrelic.NewApplication(*nr.NewRelicConfig)
@@ -59,7 +59,7 @@ func (nr *ServerNewRelic) Event(event int, args interface{}) {
 
 	}
 
-	nr.GOHttpServer.Event(event, args)
+	nr.GoHttpServer.Event(event, args)
 }
 func (nr *ServerNewRelic) Name() string {
 	return "newrelic"
@@ -74,8 +74,8 @@ func NewRelicFilter(c *revel.Controller, fc []revel.Filter) {
 	if nr, ok := revel.CurrentEngine.Engine().(*ServerNewRelic); ok {
 		if nr.NewRelicApp != nil {
 			txn := nr.NewRelicApp.StartTransaction(c.Action,
-				c.Response.Out.Server.(*revel.GOResponse).Original,
-				c.Request.In.(*revel.GORequest).Original)
+				c.Response.Out.Server.(*revel.GoResponse).Original,
+				c.Request.In.(*revel.GoRequest).Original)
 			defer txn.End()
 		} else {
 			revel.ERROR.Println("Newrelic application not initialized before filter called")

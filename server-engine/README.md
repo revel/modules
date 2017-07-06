@@ -5,10 +5,10 @@ the configuration option `server.engine` equal to the engine you want.
 You may define your own engine by implementing `revel.ServerEngine` and
 registering it with revel in an `init` 
 function `revel.RegisterServerEngine(NAME, <function to return your server instance>)`. See
-`revel.GOHttpServer` for an example
+`revel.GoHttpServer` for an example
 
 
-###App.conf
+### app.conf
 - **server.engine** Defaults to `go`. Specify the engine you wish to use 
  
  

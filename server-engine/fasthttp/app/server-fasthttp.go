@@ -98,8 +98,8 @@ func (f *FastHTTPServer) RequestHandler(ctx *fasthttp.RequestCtx) {
 func (f *FastHTTPServer) Event(event int, args interface{}) {
 
 	switch event {
-	case revel.ENGINE_EVENT_PREINIT:
-	case revel.ENGINE_EVENT_STARTUP:
+	case revel.ENGINE_BEFORE_INITIALIZED:
+	case revel.ENGINE_STARTED:
 
 	}
 
