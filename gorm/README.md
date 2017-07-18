@@ -43,7 +43,7 @@ func (c *GormController) Begin() revel.Result {
 
 ```
 
-# Transaccional Controller
+# Transactional Controller
 
 ```
 type GormTransactionController struct {

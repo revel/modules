@@ -175,9 +175,9 @@ func init() {
 	revel.OnAppStart(func() {
 		if revel.Config.BoolDefault("db.autoinit", false) {
 			InitDB()
-			//revel.InterceptMethod((*GormController).Begin, revel.BEFORE)
-			//revel.InterceptMethod((*GormController).Commit, revel.AFTER)
-			//revel.InterceptMethod((*GormController).Rollback, revel.FINALLY)
+			revel.InterceptMethod((*GormController).Begin, revel.BEFORE)
+			revel.InterceptMethod((*GormController).Commit, revel.AFTER)
+			revel.InterceptMethod((*GormController).Rollback, revel.FINALLY)
 		}
 	})
 }
