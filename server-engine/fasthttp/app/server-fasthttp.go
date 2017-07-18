@@ -403,10 +403,10 @@ func (r *FastHttpHeader) SetStatus(statusCode int) {
 func (r FastHttpCookie) GetValue() string {
 	return string(r)
 }
-func (f *FastHttpMultipartForm) GetFile() map[string][]*multipart.FileHeader {
+func (f *FastHttpMultipartForm) GetFiles() map[string][]*multipart.FileHeader {
 	return f.Form.File
 }
-func (f *FastHttpMultipartForm) GetValue() url.Values {
+func (f *FastHttpMultipartForm) GetValues() url.Values {
 	return url.Values(f.Form.Value)
 }
 func (f *FastHttpMultipartForm) RemoveAll() error {

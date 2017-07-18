@@ -12,7 +12,7 @@ import (
 )
 
 func NewTestController(w http.ResponseWriter, r *http.Request) *revel.Controller{
-	context := revel.NewGOContext(nil)
+	context := revel.NewGoContext(nil)
 	context.Request.SetRequest(r)
 	context.Response.SetResponse(w)
 	c := revel.NewController(context)
