@@ -73,7 +73,6 @@ func InitDB() {
 	InitDBWithParameters(params)
 }
 
-// GormController controllers begin, commit and rollback transactions
 type GormController struct {
 	revel.Controller
 	Txn *gorm.DB
@@ -90,11 +89,45 @@ func (c *GormController) InitDB(params DbInfo) {
 		dbInfo = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", params.DbUser, params.DbPassword, params.DbHost, params.DbName)
 	}
 	OpenDB(params.DbDriver, dbInfo)
-
 }
 
 // Begin GormController to connect db
 func (c *GormController) Begin() revel.Result {
+	c.Txn = DB
+	return nil
+}
+
+// Commit database transaction
+func (c *GormController) Commit() revel.Result {
+	return nil
+}
+
+// Rollback transaction
+func (c *GormController) Rollback() revel.Result {
+	return nil
+}
+
+// GormTransactionController controllers begin, commit and rollback transactions
+type GormTransactionController struct {
+	revel.Controller
+	Txn *gorm.DB
+}
+
+func (c *GormTransactionController) InitDB(params DbInfo) {
+	dbInfo := ""
+	switch params.DbDriver {
+	default:
+		dbInfo = fmt.Sprintf(params.DbHost)
+	case "postgres":
+		dbInfo = fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", params.DbHost, params.DbUser, params.DbName, params.DbPassword)
+	case "mysql":
+		dbInfo = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", params.DbUser, params.DbPassword, params.DbHost, params.DbName)
+	}
+	OpenDB(params.DbDriver, dbInfo)
+}
+
+// Begin GormTransactionController to connect db
+func (c *GormTransactionController) Begin() revel.Result {
 
 	txn := DB.Begin()
 	if txn.Error != nil {
@@ -107,7 +140,7 @@ func (c *GormController) Begin() revel.Result {
 }
 
 // Commit database transaction
-func (c *GormController) Commit() revel.Result {
+func (c *GormTransactionController) Commit() revel.Result {
 	if c.Txn == nil {
 		return nil
 	}
@@ -123,7 +156,7 @@ func (c *GormController) Commit() revel.Result {
 }
 
 // Rollback transaction
-func (c *GormController) Rollback() revel.Result {
+func (c *GormTransactionController) Rollback() revel.Result {
 	if c.Txn == nil {
 		return nil
 	}
@@ -142,9 +175,9 @@ func init() {
 	revel.OnAppStart(func() {
 		if revel.Config.BoolDefault("db.autoinit", false) {
 			InitDB()
-			revel.InterceptMethod((*GormController).Begin, revel.BEFORE)
-			revel.InterceptMethod((*GormController).Commit, revel.AFTER)
-			revel.InterceptMethod((*GormController).Rollback, revel.FINALLY)
+			//revel.InterceptMethod((*GormController).Begin, revel.BEFORE)
+			//revel.InterceptMethod((*GormController).Commit, revel.AFTER)
+			//revel.InterceptMethod((*GormController).Rollback, revel.FINALLY)
 		}
 	})
 }
