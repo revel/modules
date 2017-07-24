@@ -11,17 +11,26 @@ import (
 	"github.com/revel/revel"
 )
 
+func NewTestController(w http.ResponseWriter, r *http.Request) *revel.Controller{
+	context := revel.NewGoContext(nil)
+	context.Request.SetRequest(r)
+	context.Response.SetResponse(w)
+	c := revel.NewController(context)
+	return c
+}
+
 var testFilters = []revel.Filter{
 	CsrfFilter,
 	func(c *revel.Controller, fc []revel.Filter) {
-		c.RenderHtml("{{ csrftoken . }}")
+		c.RenderHTML("{{ csrftoken . }}")
 	},
 }
 
 func TestTokenInSession(t *testing.T) {
 	resp := httptest.NewRecorder()
 	getRequest, _ := http.NewRequest("GET", "http://www.example.com/", nil)
-	c := revel.NewController(revel.NewRequest(getRequest), revel.NewResponse(resp))
+	c := NewTestController(resp,getRequest)
+
 	c.Session = make(revel.Session)
 
 	testFilters[0](c, testFilters)
@@ -34,7 +43,7 @@ func TestTokenInSession(t *testing.T) {
 func TestPostWithoutToken(t *testing.T) {
 	resp := httptest.NewRecorder()
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
-	c := revel.NewController(revel.NewRequest(postRequest), revel.NewResponse(resp))
+	c := NewTestController(resp,postRequest)
 	c.Session = make(revel.Session)
 
 	testFilters[0](c, testFilters)
@@ -48,7 +57,7 @@ func TestNoReferrer(t *testing.T) {
 	resp := httptest.NewRecorder()
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
 
-	c := revel.NewController(revel.NewRequest(postRequest), revel.NewResponse(resp))
+	c := NewTestController(resp,postRequest)
 	c.Session = make(revel.Session)
 
 	RefreshToken(c)
@@ -74,7 +83,7 @@ func TestNoReferrer(t *testing.T) {
 func TestRefererHttps(t *testing.T) {
 	resp := httptest.NewRecorder()
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
-	c := revel.NewController(revel.NewRequest(postRequest), revel.NewResponse(resp))
+	c := NewTestController(resp,postRequest)
 
 	c.Session = make(revel.Session)
 
@@ -102,7 +111,7 @@ func TestRefererHttps(t *testing.T) {
 func TestHeaderWithToken(t *testing.T) {
 	resp := httptest.NewRecorder()
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
-	c := revel.NewController(revel.NewRequest(postRequest), revel.NewResponse(resp))
+	c := NewTestController(resp,postRequest)
 
 	c.Session = make(revel.Session)
 
@@ -127,7 +136,7 @@ func TestHeaderWithToken(t *testing.T) {
 func TestFormPostWithToken(t *testing.T) {
 	resp := httptest.NewRecorder()
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
-	c := revel.NewController(revel.NewRequest(postRequest), revel.NewResponse(resp))
+	c := NewTestController(resp,postRequest)
 
 	c.Session = make(revel.Session)
 
@@ -158,7 +167,7 @@ func TestNoTokenInArgsWhenCORs(t *testing.T) {
 	getRequest, _ := http.NewRequest("GET", "http://www.example1.com/", nil)
 	getRequest.Header.Add("Referer", "http://www.example2.com/")
 
-	c := revel.NewController(revel.NewRequest(getRequest), revel.NewResponse(resp))
+	c := NewTestController(resp,getRequest)
 	c.Session = make(revel.Session)
 
 	testFilters[0](c, testFilters)
