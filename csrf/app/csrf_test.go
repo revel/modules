@@ -20,6 +20,7 @@ func NewTestController(w http.ResponseWriter, r *http.Request) *revel.Controller
 }
 
 var testFilters = []revel.Filter{
+	revel.ParamsFilter,
 	CsrfFilter,
 	func(c *revel.Controller, fc []revel.Filter) {
 		c.RenderHTML("{{ csrftoken . }}")
@@ -70,8 +71,9 @@ func TestNoReferrer(t *testing.T) {
 	formPostRequest.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	formPostRequest.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
+	cnew := NewTestController(resp,formPostRequest)
 	// and replace the old request
-	c.Request = revel.NewRequest(formPostRequest)
+	c.Request = cnew.Request
 
 	testFilters[0](c, testFilters)
 
@@ -98,8 +100,9 @@ func TestRefererHttps(t *testing.T) {
 	formPostRequest.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 	formPostRequest.Header.Add("Referer", "http://www.example.com/")
 
+	cnew := NewTestController(resp,formPostRequest)
 	// and replace the old request
-	c.Request = revel.NewRequest(formPostRequest)
+	c.Request = cnew.Request
 
 	testFilters[0](c, testFilters)
 
@@ -123,8 +126,9 @@ func TestHeaderWithToken(t *testing.T) {
 	formPostRequest.Header.Add("X-CSRFToken", token)
 	formPostRequest.Header.Add("Referer", "http://www.example.com/")
 
+	cnew := NewTestController(resp,formPostRequest)
 	// and replace the old request
-	c.Request = revel.NewRequest(formPostRequest)
+	c.Request = cnew.Request
 
 	testFilters[0](c, testFilters)
 
@@ -151,8 +155,9 @@ func TestFormPostWithToken(t *testing.T) {
 	formPostRequest.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 	formPostRequest.Header.Add("Referer", "http://www.example.com/")
 
+	cnew := NewTestController(resp,formPostRequest)
 	// and replace the old request
-	c.Request = revel.NewRequest(formPostRequest)
+	c.Request = cnew.Request
 
 	testFilters[0](c, testFilters)
 

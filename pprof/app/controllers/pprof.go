@@ -15,7 +15,7 @@ type Pprof struct {
 type PprofHandler func(http.ResponseWriter, *http.Request)
 
 func (r PprofHandler) Apply(req *revel.Request, resp *revel.Response) {
-	r(resp.Out.GetRaw().(http.ResponseWriter), req.In.GetRaw().(*http.Request))
+	r(resp.Out.Server.GetRaw().(http.ResponseWriter), req.In.GetRaw().(*http.Request))
 }
 
 func (c Pprof) Profile() revel.Result {
