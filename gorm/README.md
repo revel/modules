@@ -27,3 +27,44 @@ db.password=dbpassword
 
 ```
 
+
+# Controller
+
+```
+type GormController struct {
+	revel.Controller
+	Txn *gorm.DB
+}
+
+func (c *GormController) Begin() revel.Result {
+	c.Txn = DB
+	...
+}
+
+```
+
+# Transactional Controller
+
+```
+type GormTransactionController struct {
+	revel.Controller
+	Txn *gorm.DB
+}
+
+
+// Begin GormTransactionController to connect db
+func (c *GormTransactionController) Begin() revel.Result {
+	...
+}
+
+// Commit database transaction
+func (c *GormTransactionController) Commit() revel.Result {
+	...
+}
+
+// Rollback transaction
+func (c *GormTransactionController) Rollback() revel.Result {
+	...
+}
+
+```
