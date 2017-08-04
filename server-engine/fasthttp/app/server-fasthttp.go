@@ -125,6 +125,7 @@ type (
 
 	FastHttpRequest struct {
 		toQuery         bool
+		url             *url.URL
 		query           url.Values
 		Original        *fasthttp.RequestCtx
 		FormParsed      bool
@@ -206,6 +207,11 @@ func (r *FastHttpRequest) Get(key int) (value interface{}, err error) {
 		value = string(r.Original.Path())
 	case revel.HTTP_HOST:
 		value = string(r.Original.Request.Host())
+	case revel.HTTP_URL:
+		if r.url==nil {
+			r.url, _ = url.Parse(string(r.Original.Request.URI().FullURI()))
+		}
+		value = r.url
 	case revel.HTTP_BODY:
 		value = bytes.NewBuffer(r.Original.Request.Body())
 	default:
