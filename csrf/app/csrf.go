@@ -49,7 +49,11 @@ func CsrfFilter(c *revel.Controller, fc []revel.Filter) {
 		RefreshToken(c)
 	}
 
-	referer, refErr := url.Parse(c.Request.GetHttpHeader("Referer"))
+	referer, refErr := url.Parse(c.Request.Referer())
+	if refErr != nil {
+		c.Result = c.Forbidden("REVEL CSRF: Unable to fetch referer")
+		return
+	}
 	isSameOrigin := sameOrigin(c.Request.URL, referer)
 
 	// If the Request method isn't in the white listed methods
