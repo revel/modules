@@ -43,17 +43,20 @@ type DbInfo struct {
 	DbUser     string
 	DbPassword string
 	DbName     string
+	DbConnection string
 }
 
 func InitDBWithParameters(params DbInfo) {
-	dbInfo := ""
-	switch params.DbDriver {
-	default:
-		dbInfo = fmt.Sprintf(params.DbHost)
-	case "postgres":
-		dbInfo = fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", params.DbHost, params.DbUser, params.DbName, params.DbPassword)
-	case "mysql":
-		dbInfo = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", params.DbUser, params.DbPassword, params.DbHost, params.DbName)
+	dbInfo := params.DbConnection
+	if len(dbInfo)==0 {
+		switch params.DbDriver {
+		default:
+			dbInfo = fmt.Sprintf(params.DbHost)
+		case "postgres":
+			dbInfo = fmt.Sprintf("host=%s port=8500 user=%s dbname=%s sslmode=disable password=%s", params.DbHost, params.DbUser, params.DbName, params.DbPassword)
+		case "mysql":
+			dbInfo = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", params.DbUser, params.DbPassword, params.DbHost, params.DbName)
+		}
 	}
 	OpenDB(params.DbDriver, dbInfo)
 
@@ -69,6 +72,7 @@ func InitDB() {
 	params.DbUser = revel.Config.StringDefault("db.user", "default")
 	params.DbPassword = revel.Config.StringDefault("db.password", "")
 	params.DbName = revel.Config.StringDefault("db.name", "default")
+	params.DbConnection = revel.Config.StringDefault("db.connection", "")
 
 	InitDBWithParameters(params)
 }
@@ -80,17 +84,7 @@ type GormController struct {
 }
 
 func (c *GormController) InitDB(params DbInfo) {
-	dbInfo := ""
-	switch params.DbDriver {
-	default:
-		dbInfo = fmt.Sprintf(params.DbHost)
-	case "postgres":
-		dbInfo = fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s", params.DbHost, params.DbUser, params.DbName, params.DbPassword)
-	case "mysql":
-		dbInfo = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", params.DbUser, params.DbPassword, params.DbHost, params.DbName)
-	}
-	OpenDB(params.DbDriver, dbInfo)
-
+	InitDBWithParameters(params)
 }
 
 // Begin GormController to connect db
