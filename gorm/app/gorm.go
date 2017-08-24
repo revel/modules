@@ -63,7 +63,7 @@ func InitDB() {
 	params := DbInfo{}
 	params.DbDriver = revel.Config.StringDefault("db.driver", "sqlite3")
 	params.DbHost = revel.Config.StringDefault("db.host", "localhost")
-	if params.DbDriver == "sqlite" && params.DbHost == "localhost" {
+	if params.DbDriver == "sqlite3" && params.DbHost == "localhost" {
 		params.DbHost = "/tmp/app.db"
 	}
 	params.DbUser = revel.Config.StringDefault("db.user", "default")
@@ -75,7 +75,7 @@ func InitDB() {
 
 // GormController controllers begin, commit and rollback transactions
 type GormController struct {
-	revel.Controller
+	*revel.Controller
 	Txn *gorm.DB
 }
 
