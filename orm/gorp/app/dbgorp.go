@@ -1,0 +1,80 @@
+package gorp
+import (
+	"database/sql"
+	_ "github.com/jinzhu/gorm/dialects/mysql"    // mysql package
+	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres package
+	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
+	"github.com/revel/revel"
+	sq "gopkg.in/Masterminds/squirrel.v1"
+	"gopkg.in/gorp.v2"
+)
+
+// DB Gorp
+type DbGorp struct {
+	Map *gorp.DbMap
+	// The Sql statement builder to use to build select statements
+	SqlStatementBuilder sq.StatementBuilderType
+	// Database connection information
+	Info *DbInfo
+	// The database initialization function
+	dbInitFn func(dbMap *DbGorp) (error)
+}
+
+
+type DbInfo struct {
+	DbDriver     string
+	DbHost       string
+	DbUser       string
+	DbPassword   string
+	DbName       string
+	DbConnection string
+	Dialect gorp.Dialect
+}
+
+
+// OpenDb database
+func (dbGorp *DbGorp) OpenDb() (err error) {
+	db, err := sql.Open(dbGorp.Info.DbDriver, dbGorp.Info.DbConnection)
+	if err != nil {
+		revel.ERROR.Fatal(err)
+	}
+
+	// Create the database map
+	dbGorp.Map = &gorp.DbMap{Db: db, Dialect: dbGorp.Info.Dialect}
+
+	return dbGorp.dbInit()
+}
+
+
+// Create a new database connection and open it from this one
+func (dbGorp *DbGorp) CloneDb(open bool) (newDb *DbGorp,err error) {
+	dbInfo := *dbGorp.Info
+	newDb = &DbGorp{Info:&dbInfo}
+	newDb.dbInitFn = dbGorp.dbInitFn
+	err = newDb.InitDb(open)
+
+	return
+}
+
+// Close the database connection
+func (dbGorp *DbGorp) Close() (err error) {
+	if dbGorp.Map.Db!=nil {
+		err = dbGorp.Map.Db.Close()
+	}
+	return
+}
+
+// Called to perform table registration and anything else that needs to be done on a new connection
+func (dbGorp *DbGorp) dbInit() (err error) {
+	if dbGorp.dbInitFn!=nil {
+		err = dbGorp.dbInitFn(dbGorp)
+	}
+	return
+}
+
+// Used to specifiy the init function to call when database is initialized
+// Calls the init function immediately
+func (dbGorp *DbGorp) SetDbInit(dbInitFn func(dbMap *DbGorp) (error)) (err error) {
+	dbGorp.dbInitFn = dbInitFn
+	return dbGorp.dbInit()
+}
