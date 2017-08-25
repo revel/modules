@@ -75,7 +75,6 @@ func InitDB() {
 
 // GormController controllers begin, commit and rollback transactions
 type GormController struct {
-	*revel.Controller
 	Txn *gorm.DB
 }
 
