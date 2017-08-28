@@ -23,7 +23,8 @@ These modules are part of the core revel and a dependancy
 ## Xperimental
 
 - [Auth](/auth/)
-- [Db](/testrunner/)
+- [Db](/db/)
+- [Gorm ORM](/orm/gorm)
 
 ### Caution
 this is a work in progress
