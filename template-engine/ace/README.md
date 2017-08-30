@@ -9,7 +9,7 @@
  By default the operation of revel assumes just a `.html` extension for
  controller responses so it would make more sense to use the shebang
 - Ace templates can be set to be case sensitive by setting
-`ace.tempate=case`, default is not case sensitive. If case sensitivity
+`ace.tempate.caseinsensitive=false`, default is not case sensitive. If case sensitivity
 is off internal imports must be done using lower case
 - All function registered in `revel.TemplateFuncs` are available for use 
 inside the ace framework

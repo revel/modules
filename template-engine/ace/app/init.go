@@ -70,15 +70,15 @@ func (acetmpl AceTemplate) renderInternal(wr io.Writer, arg interface{}) error {
 }
 
 type AceEngine struct {
-	loader              *revel.TemplateLoader
-	templatesByName     map[string]*AceTemplate
-	files               []*ace.File
-	Options             *ace.Options
-	CaseInsensitiveMode bool
+	loader          *revel.TemplateLoader
+	templatesByName map[string]*AceTemplate
+	files           []*ace.File
+	Options         *ace.Options
+	CaseInsensitive bool
 }
 
 func (i *AceEngine) ConvertPath(path string) string {
-	if i.CaseInsensitiveMode {
+	if i.CaseInsensitive {
 		return strings.ToLower(path)
 	}
 	return path
@@ -123,7 +123,7 @@ func (engine *AceEngine) Name() string {
 func (engine *AceEngine) Event(action int, i interface{}) {
 	if action == revel.TEMPLATE_REFRESH_REQUESTED {
 		engine.templatesByName = map[string]*AceTemplate{}
-		engine.CaseInsensitiveMode = revel.Config.StringDefault("ace.template.path", "lower") != "case"
+		engine.CaseInsensitive = revel.Config.BoolDefault("ace.template.caseinsensitive", true)
 	}
 }
 
