@@ -74,11 +74,11 @@ type PongoEngine struct {
 	loader                *revel.TemplateLoader
 	templateSetBybasePath map[string]*p2.TemplateSet
 	templates             map[string]*PongoTemplate
-	CaseInsensitiveMode   bool
+	CaseInsensitive       bool
 }
 
 func (i *PongoEngine) ConvertPath(path string) string {
-	if i.CaseInsensitiveMode {
+	if i.CaseInsensitive {
 		return strings.ToLower(path)
 	}
 	return path
@@ -137,7 +137,7 @@ func (engine *PongoEngine) Event(action int, i interface{}) {
 		// At this point all the templates have been passed into the
 		engine.templateSetBybasePath = map[string]*p2.TemplateSet{}
 		engine.templates = map[string]*PongoTemplate{}
-		engine.CaseInsensitiveMode = revel.Config.StringDefault("pongo2.template.path", "lower") != "case"
+		engine.CaseInsensitive = revel.Config.BoolDefault("pongo2.template.caseinsensitive", true)
 	}
 }
 

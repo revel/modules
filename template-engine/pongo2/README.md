@@ -6,7 +6,7 @@
  By default the operation of revel assumes just a `.html` extension for
  controller responses so it would make more sense to use the shebang
 - Pongo2 templates can be set to be case sensitive by setting
-`pongo2.tempate.path=case`, default is not case sensitive. If case sensitivity is 
+`pongo2.tempate.caseinsensitive=false`, default is not case sensitive. If case sensitivity is 
 off the templates are compiled using lower case
 - Currently the only functions built in are as follows:
   - field
