@@ -1,10 +1,10 @@
 package gorp
+
 import (
 	"database/sql"
 	_ "github.com/jinzhu/gorm/dialects/mysql"    // mysql package
 	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres package
 	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
-	"github.com/revel/revel"
 	sq "gopkg.in/Masterminds/squirrel.v1"
 	"gopkg.in/gorp.v2"
 )
@@ -17,9 +17,8 @@ type DbGorp struct {
 	// Database connection information
 	Info *DbInfo
 	// The database initialization function
-	dbInitFn func(dbMap *DbGorp) (error)
+	dbInitFn func(dbMap *DbGorp) error
 }
-
 
 type DbInfo struct {
 	DbDriver     string
@@ -28,15 +27,14 @@ type DbInfo struct {
 	DbPassword   string
 	DbName       string
 	DbConnection string
-	Dialect gorp.Dialect
+	Dialect      gorp.Dialect
 }
-
 
 // OpenDb database
 func (dbGorp *DbGorp) OpenDb() (err error) {
 	db, err := sql.Open(dbGorp.Info.DbDriver, dbGorp.Info.DbConnection)
 	if err != nil {
-		revel.ERROR.Fatal(err)
+		moduleLogger.Fatal("Open Database Error", "error", err)
 	}
 
 	// Create the database map
@@ -45,11 +43,10 @@ func (dbGorp *DbGorp) OpenDb() (err error) {
 	return dbGorp.dbInit()
 }
 
-
 // Create a new database connection and open it from this one
-func (dbGorp *DbGorp) CloneDb(open bool) (newDb *DbGorp,err error) {
+func (dbGorp *DbGorp) CloneDb(open bool) (newDb *DbGorp, err error) {
 	dbInfo := *dbGorp.Info
-	newDb = &DbGorp{Info:&dbInfo}
+	newDb = &DbGorp{Info: &dbInfo}
 	newDb.dbInitFn = dbGorp.dbInitFn
 	err = newDb.InitDb(open)
 
@@ -58,7 +55,7 @@ func (dbGorp *DbGorp) CloneDb(open bool) (newDb *DbGorp,err error) {
 
 // Close the database connection
 func (dbGorp *DbGorp) Close() (err error) {
-	if dbGorp.Map.Db!=nil {
+	if dbGorp.Map.Db != nil {
 		err = dbGorp.Map.Db.Close()
 	}
 	return
@@ -66,7 +63,7 @@ func (dbGorp *DbGorp) Close() (err error) {
 
 // Called to perform table registration and anything else that needs to be done on a new connection
 func (dbGorp *DbGorp) dbInit() (err error) {
-	if dbGorp.dbInitFn!=nil {
+	if dbGorp.dbInitFn != nil {
 		err = dbGorp.dbInitFn(dbGorp)
 	}
 	return
@@ -74,7 +71,38 @@ func (dbGorp *DbGorp) dbInit() (err error) {
 
 // Used to specifiy the init function to call when database is initialized
 // Calls the init function immediately
-func (dbGorp *DbGorp) SetDbInit(dbInitFn func(dbMap *DbGorp) (error)) (err error) {
+func (dbGorp *DbGorp) SetDbInit(dbInitFn func(dbMap *DbGorp) error) (err error) {
 	dbGorp.dbInitFn = dbInitFn
 	return dbGorp.dbInit()
+}
+
+func (dbGorp *DbGorp) Select(i interface{}, builder sq.SelectBuilder) (l []interface{}, err error) {
+	query, args, err := builder.ToSql()
+	if err == nil {
+		list, err := dbGorp.Map.Select(i, query, args...)
+		if err != nil && gorp.NonFatalError(err) {
+			return list, nil
+		}
+		return list, err
+	}
+	return
+}
+
+func (dbGorp *DbGorp) SelectOne(i interface{}, builder sq.SelectBuilder) (err error) {
+	query, args, err := builder.ToSql()
+	if err == nil {
+		err = dbGorp.Map.SelectOne(i, query, args...)
+		if err != nil && gorp.NonFatalError(err) {
+			return nil
+		}
+	}
+	return
+}
+
+func (dbGorp *DbGorp) Insert(list ...interface{}) error {
+	return dbGorp.Map.Insert(list...)
+}
+
+func (dbGorp *DbGorp) Update(list ...interface{}) (int64, error) {
+	return dbGorp.Map.Update(list...)
 }

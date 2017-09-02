@@ -56,7 +56,7 @@ var (
 ```
 ## Usage
 If `db.autoinit=true` in app.conf then you can add your tables to Gorp on app start.
-Note that the tables are added as a function - this is for database thread pooling
+Note that the tables are added as a function using `gorp.Db.SetDbInit` - this is for database thread pooling
 ```go
 import (
 	"github.com/revel/revel"
@@ -67,7 +67,7 @@ func init() {
 		// Register tables
 		gorp.Db.SetDbInit(func(dbGorp *gorp.DbGorp) error {
 			// Register tables
-			gorp.Db.Map.AddTableWithName(model.TableRow{}, "table")
+			gorp.Db.Map.AddTableWithName(model.MyTable{}, "my_table")
 			return nil
 		})		
 	},5)
@@ -131,6 +131,27 @@ lot of stuff done fast. It creates a bunch workers and each worker has
 its own connection (On the start of the worker a status is sent in case you want to do some prework). 
 Tasks are sent through the `DbWorkContainer.InputChannel` which distributes the
 task to whatever worker is available. 
+
+If you are using any tables that requires GORP to have initialized tables you 
+must register the tables using `gorp.Db.SetDbInit`. This is the only way that this service
+can properly initialize the newly thread created GORP instances. Here is an example.  
+```go
+import (
+	"github.com/revel/revel"
+	"github.com/revel/modules/gorp/app"
+)
+func init() {
+	revel.OnAppStart(func(){
+		// Register tables
+		gorp.Db.SetDbInit(func(dbGorp *gorp.DbGorp) error {
+			// Register tables
+			gorp.Db.Map.AddTableWithName(model.MyTable{}, "my_table")
+			return nil
+		})		
+	},5)
+}
+```
+ 
 
 In order to achieve this there is a `gorp.DbWorkerContainer` which is initialized by
 `NewDbWorker(db *DbGorp, callBack DbCallback, numWorkers int) (container *DbWorkerContainer, err error)`
@@ -241,4 +262,3 @@ notification is sent to the `DbCallbackImplied.StatusFn func(phase WorkerPhase, 
 if a worker runs past X seconds on a single task. 
 Each worker will have their own watchdog channel and it will send a `gorp.JobLongrunning` and
 the `gorp.DBWorker` to the status function so you can log or investigate long running processes 
-    

@@ -8,13 +8,20 @@ import (
 	"github.com/revel/revel"
 	sq "gopkg.in/Masterminds/squirrel.v1"
 	"gopkg.in/gorp.v2"
+	"github.com/revel/revel/logger"
 )
 
 var (
 	// The database map to use to populate data
 	Db = &DbGorp{}
+	moduleLogger logger.MultiLogger
 )
-
+func init() {
+	revel.RegisterModuleInit(func(module *revel.Module){
+		moduleLogger = module.Log
+		moduleLogger.Debug("Assigned Logger")
+	})
+}
 func (dbResult *DbGorp)InitDb(open bool) (err error) {
 	dbInfo := dbResult.Info
 

@@ -12,7 +12,7 @@ import (
 type Controller struct {
 	*revel.Controller
 	Txn *sql.Tx
-	Db *gorp.DbGorp
+	Db  *gorp.DbGorp
 }
 
 // Begin a transaction
@@ -56,8 +56,9 @@ func init() {
 	// Run this as soon as possible
 	revel.OnAppStart(func() {
 		if revel.Config.BoolDefault("db.autoinit", false) {
-			if err := gorp.InitDb(gorp.Db);err!=nil {
-				revel.ERROR.Panicf("gorp:Unable to initialize database")
+			if err := gorp.InitDb(gorp.Db); err != nil {
+				// Force a failure
+				revel.RevelLog.Panicf("gorp:Unable to initialize database")
 			}
 			revel.InterceptMethod((*Controller).Begin, revel.BEFORE)
 			revel.InterceptMethod((*Controller).Commit, revel.AFTER)
@@ -65,5 +66,4 @@ func init() {
 		}
 	}, 0,
 	)
-
 }
