@@ -9,29 +9,28 @@ package gormdb
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"    // mysql package
 	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres package
 	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
 	"github.com/revel/revel"
 )
-
-func checkErr(err error, msg string) {
-	if err != nil {
-		log.Fatalln(msg, err)
-	}
-}
-
 // DB Gorm
-var DB *gorm.DB
+var (
+	DB *gorm.DB
+	gormLog = revel.AppLog
+)
+func init() {
+	revel.RegisterModuleInit(func(m *revel.Module){
+		gormLog = m.Log
+	})
+}
 
 // InitDB database
 func OpenDB(dbDriver string, dbInfo string) {
 	db, err := gorm.Open(dbDriver, dbInfo)
 	if err != nil {
-		checkErr(err, "sql.Open failed")
+		gormLog.Fatal("sql.Open failed", err)
 	}
 	DB = db
 }
