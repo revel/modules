@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"github.com/revel/revel"
 )
 
