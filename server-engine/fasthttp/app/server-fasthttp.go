@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"time"
 	"strings"
+	"time"
 )
 
 type FastHTTPServer struct {
@@ -21,9 +21,14 @@ type FastHTTPServer struct {
 	MaxMultipartSize int64
 }
 
+var serverLog = revel.AppLog
+
 func init() {
-	revel.RegisterServerEngine("fasthttp",func()(revel.ServerEngine){
+	revel.RegisterServerEngine("fasthttp", func() revel.ServerEngine {
 		return &FastHTTPServer{}
+	})
+	revel.RegisterModuleInit(func(m *revel.Module) {
+		serverLog = m.Log
 	})
 }
 
@@ -41,11 +46,9 @@ func (f *FastHTTPServer) Init(init *revel.EngineInit) {
 	}
 	f.ServerInit = init
 	f.Server = &fasthttp.Server{
-
 		ReadTimeout:  time.Duration(revel.Config.IntDefault("http.timeout.read", 0)) * time.Second,
 		WriteTimeout: time.Duration(revel.Config.IntDefault("http.timeout.write", 0)) * time.Second,
 		Handler:      requestHandler,
-		Logger:       revel.ERROR,
 	}
 
 }
@@ -60,18 +63,18 @@ func (f *FastHTTPServer) Start() {
 		if f.ServerInit.Network != "tcp" {
 			// This limitation is just to reduce complexity, since it is standard
 			// to terminate SSL upstream when using unix domain sockets.
-			revel.ERROR.Fatalln("SSL is only supported for TCP sockets. Specify a port to listen on.")
+			serverLog.Fatal("SSL is only supported for TCP sockets. Specify a port to listen on.")
 		}
-		revel.ERROR.Fatalln("Failed to listen:",
+		serverLog.Fatal("Failed to listen https:", "error",
 			f.Server.ListenAndServeTLS(f.ServerInit.Address, revel.HTTPSslCert, revel.HTTPSslKey))
 	} else {
 		listener, err := net.Listen(f.ServerInit.Network, f.ServerInit.Address)
 		if err != nil {
-			revel.ERROR.Fatalln("Failed to listen:", err)
+			serverLog.Fatal("Failed to listen http:", "error", err)
 		}
-		println("Listening fasthttp ", f.ServerInit.Network, f.ServerInit.Address)
+		serverLog.Info("Listening fasthttp ", f.ServerInit.Network, f.ServerInit.Address)
 		// revel.ERROR.Fatalln("Failed to serve:", f.Server.ListenAndServe(f.ServerInit.Address))
-		revel.ERROR.Fatalln("Failed to serve:", f.Server.Serve(listener))
+		serverLog.Fatal("Server exited", "error", f.Server.Serve(listener))
 		println("***ENDING ***")
 	}
 
@@ -208,7 +211,7 @@ func (r *FastHttpRequest) Get(key int) (value interface{}, err error) {
 	case revel.HTTP_HOST:
 		value = string(r.Original.Request.Host())
 	case revel.HTTP_URL:
-		if r.url==nil {
+		if r.url == nil {
 			r.url, _ = url.Parse(string(r.Original.Request.URI().FullURI()))
 		}
 		value = r.url

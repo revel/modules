@@ -11,15 +11,21 @@ type ServerNewRelic struct {
 	revel.GoHttpServer
 }
 
+var (
+	serverLog = revel.AppLog
+)
+
 func init() {
 	revel.RegisterServerEngine("newrelic", func() revel.ServerEngine {
 		nr := &ServerNewRelic{
 			GoHttpServer: revel.GoHttpServer{},
 		}
 		config := newrelic.NewConfig("Unknown Application", " Unknown Key ")
-
 		nr.NewRelicConfig = &config
 		return nr
+	})
+	revel.RegisterModuleInit(func(m *revel.Module) {
+		serverLog = m.Log
 	})
 
 }
@@ -36,9 +42,9 @@ func (nr *ServerNewRelic) Event(event int, args interface{}) {
 		license := revel.Config.StringDefault("server.newrelic.license", "")
 		if license != "" {
 			nr.NewRelicConfig.License = license
-			revel.TRACE.Println("Assigned NewRelic license")
+			serverLog.Debug("Assigned NewRelic license")
 		} else {
-			revel.ERROR.Println("Newrelic license key not assigned, configuraiton missing 'server.newrelic.license'")
+			serverLog.Error("Newrelic license key not assigned, configuration missing 'server.newrelic.license'")
 		}
 		addfilter := revel.Config.BoolDefault("server.newrelic.addfilter", true)
 		if addfilter {
@@ -46,14 +52,14 @@ func (nr *ServerNewRelic) Event(event int, args interface{}) {
 			revel.Filters = append(revel.Filters, NewRelicFilter)
 			copy(revel.Filters[3:], revel.Filters[2:])
 			revel.Filters[2] = NewRelicFilter
-			revel.TRACE.Println("Newrelic filter injected")
+			serverLog.Debug("Newrelic filter injected")
 		}
 	case revel.ENGINE_STARTED:
 		// Check to see if configuration is set
 		// create the application interface
 		app, err := newrelic.NewApplication(*nr.NewRelicConfig)
 		if err != nil {
-			revel.ERROR.Panic("Failed to start NewRelic:", err)
+			serverLog.Panic("Failed to start NewRelic:", "error", err)
 		}
 		nr.NewRelicApp = app
 
@@ -78,7 +84,7 @@ func NewRelicFilter(c *revel.Controller, fc []revel.Filter) {
 				c.Request.In.(*revel.GoRequest).Original)
 			defer txn.End()
 		} else {
-			revel.ERROR.Println("Newrelic application not initialized before filter called")
+			serverLog.Error("Newrelic application not initialized before filter called")
 		}
 	}
 

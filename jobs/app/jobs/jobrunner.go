@@ -37,7 +37,7 @@ func Schedule(spec string, job cron.Job) error {
 	if strings.HasPrefix(spec, "cron.") {
 		confSpec, found := revel.Config.String(spec)
 		if !found {
-			panic("Cron spec not found: " + spec)
+			jobLog.Panic("Cron spec not found: " + spec)
 		}
 		spec = confSpec
 	}

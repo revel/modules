@@ -31,17 +31,17 @@ func Init() {
 	// Read configuration.
 	var found bool
 	if Driver, found = revel.Config.String("db.driver"); !found {
-		revel.ERROR.Fatal("db.driver not configured")
+		revel.RevelLog.Fatal("db.driver not configured")
 	}
 	if Spec, found = revel.Config.String("db.spec"); !found {
-		revel.ERROR.Fatal("db.spec not configured")
+		revel.RevelLog.Fatal("db.spec not configured")
 	}
 
 	// Open a connection.
 	var err error
 	Db, err = sql.Open(Driver, Spec)
 	if err != nil {
-		revel.ERROR.Fatal(err)
+		revel.RevelLog.Fatal("Open database connection error", "error", err, "driver", Driver, "spec", Spec)
 	}
 }
 

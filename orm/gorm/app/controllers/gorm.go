@@ -31,8 +31,7 @@ func (c *TxnController) Begin() revel.Result {
 
 	txn := gormdb.DB.Begin()
 	if txn.Error != nil {
-		fmt.Println(c.Txn.Error)
-		panic(txn.Error)
+		c.Log.Panic("Transaction begine error","error",txn.Error)
 	}
 
 	c.Txn = txn
