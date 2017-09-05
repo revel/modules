@@ -30,7 +30,7 @@ func init() {
 func OpenDB(dbDriver string, dbInfo string) {
 	db, err := gorm.Open(dbDriver, dbInfo)
 	if err != nil {
-		gormLog.Fatal("sql.Open failed", err)
+		gormLog.Fatal("sql.Open failed", "error", err)
 	}
 	DB = db
 }
