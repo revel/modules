@@ -1,8 +1,6 @@
 package jobs
 
 import (
-	"fmt"
-
 	"github.com/revel/cron"
 	"github.com/revel/revel"
 )
