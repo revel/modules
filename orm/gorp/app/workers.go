@@ -212,7 +212,7 @@ func (worker *DbWorker) invoke(job interface{}) {
 			trace := make([]byte, 1024)
 			count := runtime.Stack(trace, true)
 			moduleLogger.Error("Recover from panic: ", "error", err)
-			moduleLogger.Error("Stack", "size", count, "trace", trace)
+			moduleLogger.Error("Stack", "size", count, "trace", string(trace))
 		}
 	}()
 	// Setup the timeout information

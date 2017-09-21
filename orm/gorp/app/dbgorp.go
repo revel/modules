@@ -83,6 +83,9 @@ func (dbGorp *DbGorp) Select(i interface{}, builder sq.SelectBuilder) (l []inter
 		if err != nil && gorp.NonFatalError(err) {
 			return list, nil
 		}
+		if err==sql.ErrNoRows {
+			err = nil
+		}
 		return list, err
 	}
 	return
@@ -99,10 +102,33 @@ func (dbGorp *DbGorp) SelectOne(i interface{}, builder sq.SelectBuilder) (err er
 	return
 }
 
+func (dbGorp *DbGorp) SelectInt(builder sq.SelectBuilder) (i int64, err error) {
+	query, args, err := builder.ToSql()
+	if err == nil {
+		i, err = dbGorp.Map.SelectInt(query, args...)
+	}
+	return
+}
+
 func (dbGorp *DbGorp) Insert(list ...interface{}) error {
 	return dbGorp.Map.Insert(list...)
 }
 
 func (dbGorp *DbGorp) Update(list ...interface{}) (int64, error) {
 	return dbGorp.Map.Update(list...)
+}
+
+func (dbGorp *DbGorp) ExecUpdate(builder sq.UpdateBuilder) (r sql.Result, err error) {
+	query, args, err := builder.ToSql()
+	if err == nil {
+		r, err = dbGorp.Map.Exec(query, args...)
+	}
+	return
+}
+func (dbGorp *DbGorp) ExecInsert(builder sq.InsertBuilder) (r sql.Result, err error) {
+	query, args, err := builder.ToSql()
+	if err == nil {
+		r, err = dbGorp.Map.Exec(query, args...)
+	}
+	return
 }
