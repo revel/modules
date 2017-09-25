@@ -11,14 +11,14 @@ import (
 // defined in github.com/revel/modules/orm/gorp/app.Db
 type Controller struct {
 	*revel.Controller
-	Txn *sql.Tx
+	Txn *gorp.Transaction
 	Db  *gorp.DbGorp
 }
 
 // Begin a transaction
 func (c *Controller) Begin() revel.Result {
 	c.Db = gorp.Db
-	txn, err := gorp.Db.Map.Db.Begin()
+	txn, err := gorp.Db.Begin()
 	if err != nil {
 		panic(err)
 	}
