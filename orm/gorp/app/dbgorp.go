@@ -2,9 +2,6 @@ package gorp
 
 import (
 	"database/sql"
-	_ "github.com/jinzhu/gorm/dialects/mysql"    // mysql package
-	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres package
-	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
 	sq "gopkg.in/Masterminds/squirrel.v1"
 	"gopkg.in/gorp.v2"
 	"github.com/revel/revel/logger"
