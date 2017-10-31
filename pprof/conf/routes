@@ -1,4 +1,4 @@
-GET /debug/pprof/profile       Pprof.Profile
+GET /pprof/profile       Pprof.Profile
 GET /pprof/symbol        Pprof.Symbol
 GET /debug/pprof/cmdline Pprof.Cmdline
 GET /debug/pprof/trace   Pprof.Trace
