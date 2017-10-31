@@ -2,11 +2,9 @@ package gorp
 
 import (
 	"database/sql"
-	_ "github.com/jinzhu/gorm/dialects/mysql"    // mysql package
-	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres package
-	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
 	sq "gopkg.in/Masterminds/squirrel.v1"
 	"gopkg.in/gorp.v2"
+	"github.com/revel/revel/logger"
 )
 
 // DB Gorp
@@ -50,6 +48,16 @@ func (dbGorp *DbGorp) CloneDb(open bool) (newDb *DbGorp, err error) {
 	newDb.dbInitFn = dbGorp.dbInitFn
 	err = newDb.InitDb(open)
 
+	return
+}
+
+// Close the database connection
+func (dbGorp *DbGorp) Begin() (txn *Transaction, err error) {
+	tx,err := dbGorp.Map.Begin()
+	if err!=nil {
+		return
+	}
+	txn = &Transaction{tx}
 	return
 }
 
@@ -109,15 +117,6 @@ func (dbGorp *DbGorp) SelectInt(builder sq.SelectBuilder) (i int64, err error) {
 	}
 	return
 }
-
-func (dbGorp *DbGorp) Insert(list ...interface{}) error {
-	return dbGorp.Map.Insert(list...)
-}
-
-func (dbGorp *DbGorp) Update(list ...interface{}) (int64, error) {
-	return dbGorp.Map.Update(list...)
-}
-
 func (dbGorp *DbGorp) ExecUpdate(builder sq.UpdateBuilder) (r sql.Result, err error) {
 	query, args, err := builder.ToSql()
 	if err == nil {
@@ -131,4 +130,39 @@ func (dbGorp *DbGorp) ExecInsert(builder sq.InsertBuilder) (r sql.Result, err er
 		r, err = dbGorp.Map.Exec(query, args...)
 	}
 	return
+}
+
+//
+// Shifted some common functions up a level
+////
+
+
+func (dbGorp *DbGorp) Insert(list ...interface{}) error {
+	return dbGorp.Map.Insert(list...)
+}
+
+func (dbGorp *DbGorp) Update(list ...interface{}) (int64, error) {
+	return dbGorp.Map.Update(list...)
+}
+func (dbGorp *DbGorp) Get(i interface{}, keys ...interface{}) (interface{}, error) {
+	return dbGorp.Map.Get(i,keys...)
+}
+func (dbGorp *DbGorp) Delete(i ...interface{}) (int64, error) {
+	return dbGorp.Map.Delete(i...)
+}
+
+func (dbGorp *DbGorp) TraceOn(log logger.MultiLogger) {
+	dbGorp.Map.TraceOn("",&simpleTrace{log.New("section","gorp")})
+
+}
+func (dbGorp *DbGorp) TraceOff() {
+
+}
+
+type simpleTrace struct {
+	log logger.MultiLogger
+}
+
+func (s *simpleTrace) Printf(format string, v ...interface{}) {
+	s.log.Infof(format,v...)
 }
