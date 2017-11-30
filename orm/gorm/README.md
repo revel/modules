@@ -19,11 +19,11 @@ module.gorm = github.com/revel/modules/orm/gorm
 ```ini
 # Database config
 db.autoinit=true # default=true
-db.driver=sqlite # mysql, postgres, sqlite3
-db.host=localhost  # Use db.host /tmp/app.db is your driver is sqlite
-db.user=dbuser
-db.name=dbname
-db.password=dbpassword
+db.driver=sqlite3 # mysql, postgres, sqlite3
+db.host=/tmp/app.db  # Use db.host /tmp/app.db is your driver is sqlite
+#db.user=dbuser
+#db.name=dbname
+#db.password=dbpassword
 
 ```
 
@@ -33,7 +33,7 @@ package controllers
 
 import (
     "github.com/revel/revel"
-    gormc "github.com/revel/modules/gorm/orm/app/controllers"
+    gormc "github.com/revel/modules/orm/gorm/app/controllers"
 )
 
 type App struct {
@@ -59,7 +59,7 @@ package controllers
 
 import (
     "github.com/revel/revel"
-    gormc "github.com/revel/modules/gorm/orm/app/controllers"
+    gormc "github.com/revel/modules/orm/gorm/app/controllers"
 )
 
 type App struct {
