@@ -10,19 +10,22 @@ package gormdb
 
 import (
 	"fmt"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"    // mysql package
 	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres package
 	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
 	"github.com/revel/revel"
 )
+
 // DB Gorm
 var (
-	DB *gorm.DB
+	DB      *gorm.DB
 	gormLog = revel.AppLog
 )
+
 func init() {
-	revel.RegisterModuleInit(func(m *revel.Module){
+	revel.RegisterModuleInit(func(m *revel.Module) {
 		gormLog = m.Log
 	})
 }
