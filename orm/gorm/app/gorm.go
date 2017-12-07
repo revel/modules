@@ -6,22 +6,26 @@ package gormdb
 // db.user=dbuser
 // db.name=dbname
 // db.password=dbpassword
+// db.singulartable=false # true, false
 
 import (
 	"fmt"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"    // mysql package
 	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres package
 	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
 	"github.com/revel/revel"
 )
+
 // DB Gorm
 var (
-	DB *gorm.DB
+	DB      *gorm.DB
 	gormLog = revel.AppLog
 )
+
 func init() {
-	revel.RegisterModuleInit(func(m *revel.Module){
+	revel.RegisterModuleInit(func(m *revel.Module) {
 		gormLog = m.Log
 	})
 }
@@ -33,6 +37,10 @@ func OpenDB(dbDriver string, dbInfo string) {
 		gormLog.Fatal("sql.Open failed", "error", err)
 	}
 	DB = db
+	singulartable := revel.Config.BoolDefault("db.singulartable", false)
+	if singulartable {
+		DB.SingularTable(singulartable)
+	}
 }
 
 type DbInfo struct {

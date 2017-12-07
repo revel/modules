@@ -6,7 +6,7 @@ import (
 	"github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
 	"github.com/jinzhu/gorm"
-	"github.com/revel/modules/orm/gorm/app"
+	"github.com/almarto/modules/orm/gorm/app"
 )
 
 type Line struct {
