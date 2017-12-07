@@ -6,6 +6,7 @@ package gormdb
 // db.user=dbuser
 // db.name=dbname
 // db.password=dbpassword
+// db.singulartable=false # true, false
 
 import (
 	"fmt"
@@ -33,6 +34,10 @@ func OpenDB(dbDriver string, dbInfo string) {
 		gormLog.Fatal("sql.Open failed", "error", err)
 	}
 	DB = db
+	singulartable := revel.Config.BoolDefault("db.singulartable", false)
+	if singulartable {
+		DB.SingularTable(singulartable)
+	}
 }
 
 type DbInfo struct {
