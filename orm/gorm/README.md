@@ -24,8 +24,18 @@ db.host=/tmp/app.db  # Use db.host /tmp/app.db is your driver is sqlite
 #db.user=dbuser
 #db.name=dbname
 #db.password=dbpassword
-
+#db.singulartable=false # default=false
 ```
+
+#### Database Configuration Parameters Extended Information
+* _autoinit_: The `Db` is initialized from the app.conf if `db.autoinit=true`.
+* _singulartable_: By default all tables created based on a struct are pluralized.
+                   For Example: a `type User struct {}` becomes table `users` in the database
+                   , by setting `singulartable` to `true`, User's default table name will be `user`.
+                   __Note__ table names set with `TableName` won't be affected by this setting.
+                   You can also change the created table names by setting gorm.DefaultTableNameHandler on AppStartup
+                   or func init() see [here](http://jinzhu.me/gorm/models.html#conventions)  for more details
+
 
 ## Example usage with transactions
 ```go
