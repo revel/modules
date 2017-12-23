@@ -8,6 +8,6 @@ type AceController struct {
 
 // Called to render the ace template inner
 func (c *AceController) RenderAceTemplate(base, inner string) revel.Result {
-	c.ViewArgs["ace_inner"] = inner
+	c.ViewArgs["ace-inner"] = inner
 	return c.RenderTemplate(base)
 }
