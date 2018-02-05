@@ -8,6 +8,7 @@ type (
 	// This is a small wrapped around gorp.Transaction so you can make use of the builder statements as well
 	Transaction struct {
 		Map *gorpa.Transaction
+		builder sq.StatementBuilderType
 	}
 )
 
@@ -79,4 +80,10 @@ func (txn *Transaction) Get(i interface{}, keys ...interface{}) (interface{}, er
 }
 func (txn *Transaction) Delete(i ...interface{}) (int64, error) {
 	return txn.Map.Delete(i...)
+}
+func (txn *Transaction) GetMap() DbGeneric {
+	return txn.Map
+}
+func (txn *Transaction) Builder() sq.StatementBuilderType {
+	return txn.builder
 }

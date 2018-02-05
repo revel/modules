@@ -23,7 +23,7 @@ var allowedMethods = map[string]bool{
 func RandomString(length int) (string, error) {
 	buffer := make([]byte, int(math.Ceil(float64(length)/2)))
 	if _, err := io.ReadFull(rand.Reader, buffer); err != nil {
-		return "", nil
+		return "", err
 	}
 	str := hex.EncodeToString(buffer)
 	return str[:length], nil

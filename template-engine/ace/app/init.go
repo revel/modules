@@ -110,7 +110,6 @@ func (engine *AceEngine) ParseAndAdd(baseTemplate *revel.TemplateView) error {
 
 func (engine *AceEngine) Lookup(templateName string) revel.Template {
 	if tpl, found := engine.templatesByName[engine.ConvertPath(templateName)]; found {
-
 		return tpl
 	}
 	return nil

@@ -20,7 +20,7 @@ func (c *Controller) Begin() revel.Result {
 	c.Db = gorp.Db
 	txn, err := gorp.Db.Begin()
 	if err != nil {
-		panic(err)
+		panic(err.Error() + " Failed to establish database connection with " + c.Db.Info.DbConnection)
 	}
 	c.Txn = txn
 	return nil
