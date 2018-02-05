@@ -2,9 +2,9 @@ package gorp
 
 import (
 	"database/sql"
+	"github.com/revel/revel/logger"
 	sq "gopkg.in/Masterminds/squirrel.v1"
 	"gopkg.in/gorp.v2"
-	"github.com/revel/revel/logger"
 )
 
 // DB Gorp
@@ -27,6 +27,32 @@ type DbInfo struct {
 	DbConnection string
 	Dialect      gorp.Dialect
 }
+type (
+	DbGeneric interface {
+		Select(i interface{}, query string, args ...interface{}) ([]interface{}, error)
+		Exec(query string, args ...interface{}) (sql.Result, error)
+		Insert(list ...interface{}) error
+		Update(list ...interface{}) (int64, error)
+		Delete(i ...interface{}) (int64, error)
+		SelectOne(holder interface{}, query string, args ...interface{}) error
+	}
+	DbReadable interface {
+		Builder() sq.StatementBuilderType
+		Get(i interface{}, keys ...interface{}) (interface{}, error)
+		Select(i interface{}, builder sq.SelectBuilder) (l []interface{}, err error)
+		SelectOne(i interface{}, builder sq.SelectBuilder) (err error)
+		SelectInt(builder sq.SelectBuilder) (i int64, err error)
+		GetMap() DbGeneric
+	}
+	DbWriteable interface {
+		DbReadable
+		Insert(list ...interface{}) error
+		Update(list ...interface{}) (int64, error)
+		Delete(i ...interface{}) (int64, error)
+		ExecUpdate(builder sq.UpdateBuilder) (r sql.Result, err error)
+		ExecInsert(builder sq.InsertBuilder) (r sql.Result, err error)
+	}
+)
 
 // OpenDb database
 func (dbGorp *DbGorp) OpenDb() (err error) {
@@ -53,11 +79,11 @@ func (dbGorp *DbGorp) CloneDb(open bool) (newDb *DbGorp, err error) {
 
 // Close the database connection
 func (dbGorp *DbGorp) Begin() (txn *Transaction, err error) {
-	tx,err := dbGorp.Map.Begin()
-	if err!=nil {
+	tx, err := dbGorp.Map.Begin()
+	if err != nil {
 		return
 	}
-	txn = &Transaction{tx}
+	txn = &Transaction{tx, dbGorp.SqlStatementBuilder}
 	return
 }
 
@@ -91,7 +117,7 @@ func (dbGorp *DbGorp) Select(i interface{}, builder sq.SelectBuilder) (l []inter
 		if err != nil && gorp.NonFatalError(err) {
 			return list, nil
 		}
-		if err==sql.ErrNoRows {
+		if err == sql.ErrNoRows {
 			err = nil
 		}
 		return list, err
@@ -136,7 +162,6 @@ func (dbGorp *DbGorp) ExecInsert(builder sq.InsertBuilder) (r sql.Result, err er
 // Shifted some common functions up a level
 ////
 
-
 func (dbGorp *DbGorp) Insert(list ...interface{}) error {
 	return dbGorp.Map.Insert(list...)
 }
@@ -145,18 +170,24 @@ func (dbGorp *DbGorp) Update(list ...interface{}) (int64, error) {
 	return dbGorp.Map.Update(list...)
 }
 func (dbGorp *DbGorp) Get(i interface{}, keys ...interface{}) (interface{}, error) {
-	return dbGorp.Map.Get(i,keys...)
+	return dbGorp.Map.Get(i, keys...)
 }
 func (dbGorp *DbGorp) Delete(i ...interface{}) (int64, error) {
 	return dbGorp.Map.Delete(i...)
 }
 
 func (dbGorp *DbGorp) TraceOn(log logger.MultiLogger) {
-	dbGorp.Map.TraceOn("",&simpleTrace{log.New("section","gorp")})
+	dbGorp.Map.TraceOn("", &simpleTrace{log.New("section", "gorp")})
 
 }
 func (dbGorp *DbGorp) TraceOff() {
 
+}
+func (dbGorp *DbGorp) Builder() sq.StatementBuilderType {
+	return dbGorp.SqlStatementBuilder
+}
+func (dbGorp *DbGorp) GetMap() DbGeneric {
+	return dbGorp.Map
 }
 
 type simpleTrace struct {
@@ -164,5 +195,5 @@ type simpleTrace struct {
 }
 
 func (s *simpleTrace) Printf(format string, v ...interface{}) {
-	s.log.Infof(format,v...)
+	s.log.Infof(format, v...)
 }

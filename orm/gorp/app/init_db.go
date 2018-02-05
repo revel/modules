@@ -32,6 +32,10 @@ func (dbResult *DbGorp)InitDb(open bool) (err error) {
 		if len(dbInfo.DbConnection) == 0 {
 			dbInfo.DbConnection = fmt.Sprintf(dbInfo.DbHost)
 		}
+	case "ql":
+		fallthrough
+	case "ql-mem":
+		fallthrough
 	case "postgres":
 		dbResult.SqlStatementBuilder = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 		dbInfo.Dialect = gorp.PostgresDialect{}
