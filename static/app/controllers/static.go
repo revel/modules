@@ -167,7 +167,7 @@ func serve(c Static, prefix, filepath string, allowDir bool) revel.Result {
 	}
 
 	// Normalize filepath and verify that the suffix is the same
-	if !strings.Contains(fpath.Clean(fname), filepath) {
+	if !strings.Contains(fpath.ToSlash(fpath.Clean(fname)), fpath.ToSlash(filepath)) {
 		c.Log.Warnf("Attempted to read path structure outside of base path: %s %s", fname, fpath.Clean(filepath))
 		return c.NotFound("")
 	}
