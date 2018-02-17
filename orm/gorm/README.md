@@ -21,6 +21,7 @@ module.gorm = github.com/revel/modules/orm/gorm
 db.autoinit=true # default=true
 db.driver=sqlite3 # mysql, postgres, sqlite3
 db.host=/tmp/app.db  # Use db.host /tmp/app.db is your driver is sqlite
+#db.port=dbport # when the port is not used the default of each driver
 #db.user=dbuser
 #db.name=dbname
 #db.password=dbpassword
