@@ -29,12 +29,13 @@ func RandomString(length int) (string, error) {
 	return str[:length], nil
 }
 
-func RefreshToken(c *revel.Controller) {
+func RefreshToken(c *revel.Controller) string {
 	token, err := RandomString(64)
 	if err != nil {
 		panic(err)
 	}
 	c.Session["csrf_token"] = token
+	return token
 }
 
 // CsrfFilter enables CSRF request token creation and verification.
@@ -46,7 +47,7 @@ func CsrfFilter(c *revel.Controller, fc []revel.Filter) {
 	token, foundToken := c.Session["csrf_token"]
 
 	if !foundToken {
-		RefreshToken(c)
+		token = RefreshToken(c)
 	}
 
 	referer, refErr := url.Parse(c.Request.Referer())
