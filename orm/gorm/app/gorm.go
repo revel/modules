@@ -61,7 +61,7 @@ func InitDBWithParameters(params DbInfo) {
 	case "postgres":
 		dbInfo = fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable password=%s", params.DbHost, params.DbPort, params.DbUser, params.DbName, params.DbPassword)
 	case "mysql":
-		dbInfo = fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local", params.DbUser, params.DbPassword, params.DbHost, params.DbPort, params.DbName)
+        dbInfo = fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", params.DbUser, params.DbPassword, params.DbHost, params.DbPort, params.DbName)
 		fmt.Println(dbInfo)
 	}
 	OpenDB(params.DbDriver, dbInfo)
