@@ -15,22 +15,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	"github.com/revel/modules/static/app/model"
 )
 
 // Static file serving controller
 type Static struct {
 	*revel.Controller
 }
-type FileInformation struct {
-	Icon     string
-	Name     string
-	Relative string     // Relative path to current request
-	Size     int64      // The size of the file
-	NiceSize string     // The size of the file
-	SizeType string     // The type of size
-	Modified *time.Time // The last modified date
-}
-
 const (
 	B int64 = 1 << (10 * iota) // ignore first value by assigning to blank identifier
 	KB
@@ -223,7 +214,7 @@ func (c *Static) processDir(fullPath, basePath string) (args map[string]interfac
 	dirName := fpath.Base(fullPath)
 	args = map[string]interface{}{"dirName": dirName}
 	// Walk the folder showing up and down links
-	dirFiles := []FileInformation{}
+	dirFiles := []model.FileInformation{}
 	symLinkPath, e := fpath.EvalSymlinks(fullPath)
 	if e != nil {
 		return args, e
@@ -236,11 +227,11 @@ func (c *Static) processDir(fullPath, basePath string) (args map[string]interfac
 	}
 
 	if fullPath != basePath {
-		fileInfo := FileInformation{Icon: UP_DIR_ICON, Name: c.Message("static\\parent directory"), Relative: "../"}
+		fileInfo := model.FileInformation{Icon: UP_DIR_ICON, Name: c.Message("static\\parent directory"), Relative: "../"}
 		dirFiles = append(dirFiles, fileInfo)
 	}
 	for _, f := range files {
-		fileInfo := FileInformation{Name: f.Name()}
+		fileInfo := model.FileInformation{Name: f.Name()}
 		if f.IsDir() {
 			fileInfo.Icon = DIR_ICON
 			// Check that it is not a symnlink

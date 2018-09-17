@@ -24,6 +24,7 @@ type DbInfo struct {
 	DbUser       string
 	DbPassword   string
 	DbName       string
+	DbSchema     string
 	DbConnection string
 	Dialect      gorp.Dialect
 }
@@ -43,6 +44,7 @@ type (
 		SelectOne(i interface{}, builder sq.SelectBuilder) (err error)
 		SelectInt(builder sq.SelectBuilder) (i int64, err error)
 		GetMap() DbGeneric
+		Schema() string
 	}
 	DbWriteable interface {
 		DbReadable
@@ -83,7 +85,7 @@ func (dbGorp *DbGorp) Begin() (txn *Transaction, err error) {
 	if err != nil {
 		return
 	}
-	txn = &Transaction{tx, dbGorp.SqlStatementBuilder}
+	txn = &Transaction{tx, dbGorp}
 	return
 }
 
@@ -188,6 +190,12 @@ func (dbGorp *DbGorp) Builder() sq.StatementBuilderType {
 }
 func (dbGorp *DbGorp) GetMap() DbGeneric {
 	return dbGorp.Map
+}
+func (dbGorp *DbGorp) Schema() (result string) {
+	if dbGorp.Info!=nil {
+		result = dbGorp.Info.DbSchema
+	}
+	return
 }
 
 type simpleTrace struct {
