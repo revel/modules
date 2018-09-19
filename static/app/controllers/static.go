@@ -14,7 +14,6 @@ import (
 	"github.com/revel/revel"
 	"io/ioutil"
 	"net/http"
-	"time"
 	"github.com/revel/modules/static/app/model"
 )
 
