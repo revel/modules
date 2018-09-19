@@ -68,6 +68,7 @@ func InitDb(dbResult *DbGorp) (error) {
 	params.DbPassword = revel.Config.StringDefault("db.password", "")
 	params.DbName = revel.Config.StringDefault("db.name", "default")
 	params.DbConnection = revel.Config.StringDefault("db.connection", "")
+	params.DbSchema = revel.Config.StringDefault("db.schema", "")
 	dbResult.Info = &params
 
 	return dbResult.InitDb(true)

@@ -8,7 +8,7 @@ type (
 	// This is a small wrapped around gorp.Transaction so you can make use of the builder statements as well
 	Transaction struct {
 		Map *gorpa.Transaction
-		builder sq.StatementBuilderType
+		dbgorp *DbGorp
 	}
 )
 
@@ -85,5 +85,8 @@ func (txn *Transaction) GetMap() DbGeneric {
 	return txn.Map
 }
 func (txn *Transaction) Builder() sq.StatementBuilderType {
-	return txn.builder
+	return txn.dbgorp.SqlStatementBuilder
+}
+func (txn *Transaction) Schema() (result string) {
+	return txn.dbgorp.Schema()
 }
