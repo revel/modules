@@ -98,7 +98,7 @@ func (f *FastHTTPServer) RequestHandler(ctx *fasthttp.RequestCtx) {
 	f.ServerInit.Callback(context)
 }
 
-func (f *FastHTTPServer) Event(event int, args interface{}) {
+func (f *FastHTTPServer) Event(event revel.Event, args interface{}) {
 
 	switch event {
 	case revel.ENGINE_BEFORE_INITIALIZED:
