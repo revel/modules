@@ -16,7 +16,7 @@ func RevelTestHelper(m *testing.M, mode string, runner func(port int)) {
 	flag.Parse()
 	// call flag.Parse() here if TestMain uses flags
 	locker := sync.Mutex{}
-	revel.AddInitEventHandler(func(event int, value interface{}) (returnType int) {
+	revel.AddInitEventHandler(func(event revel.Event, value interface{}) (returnType revel.EventResponse) {
 		if event == revel.REVEL_BEFORE_MODULES_LOADED {
 			revel.Config.SetOption("server.engine", "go-test")
 			revel.Config.SetOption("module.go-test", "github.com/revel/modules/server-engine/gohttptest")
