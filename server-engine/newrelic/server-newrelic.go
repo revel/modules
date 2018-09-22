@@ -33,7 +33,7 @@ func (g *ServerNewRelic) Init(init *revel.EngineInit) {
 	g.GoHttpServer.Init(init)
 }
 
-func (nr *ServerNewRelic) Event(event int, args interface{}) {
+func (nr *ServerNewRelic) Event(event revel.Event, args interface{}) {
 
 	switch event {
 	case revel.ENGINE_BEFORE_INITIALIZED:

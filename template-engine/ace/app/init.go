@@ -119,7 +119,7 @@ func (engine *AceEngine) Name() string {
 	return ACE_TEMPLATE
 }
 
-func (engine *AceEngine) Event(action int, i interface{}) {
+func (engine *AceEngine) Event(action revel.Event, i interface{}) {
 	if action == revel.TEMPLATE_REFRESH_REQUESTED {
 		engine.templatesByName = map[string]*AceTemplate{}
 		engine.CaseInsensitive = revel.Config.BoolDefault("ace.template.caseinsensitive", true)

@@ -132,7 +132,7 @@ func (engine *PongoEngine) Lookup(templateName string) revel.Template {
 	}
 	return tpl
 }
-func (engine *PongoEngine) Event(action int, i interface{}) {
+func (engine *PongoEngine) Event(action revel.Event, i interface{}) {
 	if action == revel.TEMPLATE_REFRESH_REQUESTED {
 		// At this point all the templates have been passed into the
 		engine.templateSetBybasePath = map[string]*p2.TemplateSet{}
