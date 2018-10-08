@@ -5,41 +5,51 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/revel/revel"
+	"github.com/revel/revel/session"
+	"golang.org/x/net/websocket"
+	"io"
+	"mime"
+	"mime/multipart"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
-	"regexp"
-	"testing"
-	"path/filepath"
-	"mime"
-	"io"
-	"strings"
-	"net/url"
-	"mime/multipart"
-	"golang.org/x/net/websocket"
-	"os"
 	"net/textproto"
+	"net/url"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"testing"
 )
 
 // Start a new request, with a new session
 func NewTestSuite(t *testing.T) *TestSuite {
+	return NewTestSuiteEngine(revel.NewSessionCookieEngine(), t)
+}
+
+// Define a new test suite with a custom session engine
+func NewTestSuiteEngine(engine revel.SessionEngine, t *testing.T) TestSuite {
 	jar, _ := cookiejar.New(nil)
-	return &TestSuite{ResponseChannel: make(chan bool), Client: &http.Client{Jar: jar},
-		Session: make(revel.Session),
-		T:       t,
+	ts := TestSuite{
+		Client:        &http.Client{Jar: jar},
+		Session:       session.NewSession(),
+		SessionEngine: engine,
+		T:             t,
 	}
+
+	return ts
 }
 
 // TestSuite container
 type TestSuite struct {
 	Response        *httptest.ResponseRecorder // The response recorder
 	ResponseChannel chan bool                  // The response channel
-	Session         revel.Session              // The session
+	Session         session.Session            // The session
+	SessionEngine   *revel.SessionCookieEngine // The session engine
 	Sent            bool                       // True if sent
-	T               *testing.T                  // The test to handle any errors
+	T               *testing.T                 // The test to handle any errors
 	Client          *http.Client               // The client to extract the cookie data
 }
-
 
 // NewTestRequest returns an initialized *TestRequest. It is used for extending
 // testsuite package making it possibe to define own methods. Example:
@@ -228,7 +238,20 @@ func (t *TestSuite) PostFileCustom(uri string, params url.Values, filePaths url.
 // examine the Response and ResponseBody properties. Session data will be
 // added to the request cookies for you.
 func (r *TestRequest) Send() *TestRequest {
-	r.AddCookie(r.testSuite.Session.Cookie())
+	writer := httptest.NewRecorder()
+	context := revel.NewGoContext(nil)
+	context.Request.SetRequest(r.Request)
+	context.Response.SetResponse(writer)
+	controller := revel.NewController(context)
+	controller.Session = r.testSuite.Session
+
+	r.testSuite.SessionEngine.Encode(controller)
+	response := http.Response{Header: writer.Header()}
+	cookies := response.Cookies()
+	for _, c := range cookies {
+		r.AddCookie(c)
+	}
+
 	r.MakeRequest()
 	return r
 }
@@ -241,20 +264,27 @@ func (r *TestRequest) MakeRequest() *TestRequest {
 	<-r.testSuite.ResponseChannel
 	r.Sent = true
 
-	// Look for a session cookie in the response and parse it.
-	sessionCookieName := r.testSuite.Session.Cookie().Name
+	// Create the controller again to receive the response for processing.
+	context := revel.NewGoContext(nil)
+	// Set the request with the header from the response..
+	newRequest := &http.Request{URL: r.URL, Header: r.testSuite.Response.Header}
 	for _, cookie := range r.testSuite.Client.Jar.Cookies(r.Request.URL) {
-		if cookie.Name == sessionCookieName {
-			r.testSuite.Session = revel.GetSessionFromCookie(revel.GoCookie(*cookie))
-			break
-		}
+		newRequest.AddCookie(cookie)
 	}
+	context.Request.SetRequest(newRequest)
+	context.Response.SetResponse(httptest.NewRecorder())
+	controller := revel.NewController(context)
+
+	// Decode the session data from the controller and assign it to the session
+	r.testSuite.SessionEngine.Decode(controller)
+	r.testSuite.Session = controller.Session
+
 	return r
 }
 
 // WebSocket creates a websocket connection to the given path and returns it
 func (t *TestSuite) WebSocket(path string) *websocket.Conn {
-	t.Assertf(true,"Web Socket Not implemented at this time")
+	t.Assertf(true, "Web Socket Not implemented at this time")
 	origin := t.BaseUrl() + "/"
 	url := t.WebSocketUrl() + path
 	ws, err := websocket.Dial(url, "", origin)
@@ -379,5 +409,5 @@ func escapeQuotes(s string) string {
 type TestRequest struct {
 	*http.Request
 	testSuite *TestSuite
-	Sent bool
+	Sent      bool
 }

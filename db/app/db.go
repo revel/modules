@@ -43,6 +43,13 @@ func Init() {
 	if err != nil {
 		revel.RevelLog.Fatal("Open database connection error", "error", err, "driver", Driver, "spec", Spec)
 	}
+
+	revel.OnAppStop(func(){
+		revel.RevelLog.Info("Closing the database (from module)")
+		if err := Db.Close();err!=nil {
+			revel.AppLog.Error("Failed to close the database", "error",err)
+		}
+	})
 }
 
 // Transactional definition for database transaction

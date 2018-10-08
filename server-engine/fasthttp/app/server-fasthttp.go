@@ -13,12 +13,21 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"sort"
+	"github.com/valyala/fasthttp/reuseport"
+	"os/signal"
+	"os"
+	"path"
 )
 
 type FastHTTPServer struct {
 	Server           *fasthttp.Server
 	ServerInit       *revel.EngineInit
 	MaxMultipartSize int64
+	HttpMuxList          revel.ServerMuxList
+	HasAppMux            bool
+	signalChan chan os.Signal
+  graceful net.Listener
 }
 
 var serverLog = revel.AppLog
@@ -32,6 +41,7 @@ func init() {
 	})
 }
 
+// Called to initialize the FastHttpServer
 func (f *FastHTTPServer) Init(init *revel.EngineInit) {
 	f.MaxMultipartSize = int64(revel.Config.IntDefault("server.request.max.multipart.filesize", 32)) << 20 /* 32 MB */
 	fastHttpContextStack = revel.NewStackLock(revel.Config.IntDefault("server.context.stack", 100),
@@ -44,6 +54,13 @@ func (f *FastHTTPServer) Init(init *revel.EngineInit) {
 	requestHandler := func(ctx *fasthttp.RequestCtx) {
 		f.RequestHandler(ctx)
 	}
+	// Adds the mux list
+	f.HttpMuxList = init.HTTPMuxList
+	sort.Sort(f.HttpMuxList)
+	f.HasAppMux = len(f.HttpMuxList) > 0
+
+	f.signalChan = make(chan os.Signal)
+
 	f.ServerInit = init
 	f.Server = &fasthttp.Server{
 		ReadTimeout:  time.Duration(revel.Config.IntDefault("http.timeout.read", 0)) * time.Second,
@@ -59,6 +76,18 @@ func (f *FastHTTPServer) Start() {
 		time.Sleep(100 * time.Millisecond)
 		fmt.Printf("\nListening on fasthttp %s...\n", f.ServerInit.Address)
 	}()
+	if f.ServerInit.Network=="tcp" {
+		f.ServerInit.Network = "tcp4"
+	}
+	listener, err := reuseport.Listen(f.ServerInit.Network, f.ServerInit.Address)
+	if err != nil {
+		serverLog.Fatal("Failed to listen http:", "error", err, "network",f.ServerInit.Network,"address", f.ServerInit.Address)
+	}
+
+	// create a graceful shutdown listener
+	duration := 5 * time.Second
+	f.graceful = NewGracefulListener(listener, duration)
+
 	if revel.HTTPSsl {
 		if f.ServerInit.Network != "tcp" {
 			// This limitation is just to reduce complexity, since it is standard
@@ -66,21 +95,83 @@ func (f *FastHTTPServer) Start() {
 			serverLog.Fatal("SSL is only supported for TCP sockets. Specify a port to listen on.")
 		}
 		serverLog.Fatal("Failed to listen https:", "error",
-			f.Server.ListenAndServeTLS(f.ServerInit.Address, revel.HTTPSslCert, revel.HTTPSslKey))
+			f.Server.ServeTLS(f.graceful, revel.HTTPSslCert, revel.HTTPSslKey))
 	} else {
-		listener, err := net.Listen(f.ServerInit.Network, f.ServerInit.Address)
-		if err != nil {
-			serverLog.Fatal("Failed to listen http:", "error", err)
-		}
+
 		serverLog.Info("Listening fasthttp ", f.ServerInit.Network, f.ServerInit.Address)
-		// revel.ERROR.Fatalln("Failed to serve:", f.Server.ListenAndServe(f.ServerInit.Address))
-		serverLog.Fatal("Server exited", "error", f.Server.Serve(listener))
-		println("***ENDING ***")
+		serverLog.Warn("Server exiting", "error", f.Server.Serve(f.graceful))
+	}
+}
+
+// The root handler
+func (f *FastHTTPServer) RequestHandler(ctx *fasthttp.RequestCtx) {
+	// This section is called if the developer has added custom mux to the app
+	if f.HasAppMux && f.handleAppMux(ctx) {
+		return
+	}
+	f.handleMux(ctx)
+}
+
+// Handle the request and response for the servers mux
+func (f *FastHTTPServer) handleAppMux(ctx *fasthttp.RequestCtx) (result  bool) {
+	// Check the prefix and split them
+	cpath := string(ctx.Path())
+	requestPath := path.Clean(cpath)
+	if handler, hasHandler := f.HttpMuxList.Find(requestPath); hasHandler {
+		result = true
+		clientIP := HttpClientIP(ctx)
+		localLog := serverLog.New("ip", clientIP,
+			"path", cpath, "method", string(ctx.Method()))
+		defer func() {
+			if err := recover(); err != nil {
+				localLog.Error("An error was caught using the handler", "path", requestPath, "error", err)
+				fmt.Fprintf(ctx,"Unable to handle response for third part mux %v",err)
+				ctx.Response.SetStatusCode(http.StatusInternalServerError)
+				return
+			}
+		}()
+		start := time.Now()
+		handler.(fasthttp.RequestHandler)(ctx)
+		localLog.Info("Request Stats",
+			"start", start,
+			"duration_seconds", time.Since(start).Seconds(), "section", "requestlog",
+		)
+		return
+	}
+	return
+}
+
+
+// ClientIP method returns client IP address from HTTP request.
+//
+// Note: Set property "app.behind.proxy" to true only if Revel is running
+// behind proxy like nginx, haproxy, apache, etc. Otherwise
+// you may get inaccurate Client IP address. Revel parses the
+// IP address in the order of X-Forwarded-For, X-Real-IP.
+//
+// By default revel will get http.Request's RemoteAddr
+func HttpClientIP(ctx *fasthttp.RequestCtx) string {
+	if revel.Config.BoolDefault("app.behind.proxy", false) {
+		// Header X-Forwarded-For
+		if fwdFor := strings.TrimSpace(string(ctx.Request.Header.Peek(revel.HdrForwardedFor))); fwdFor != "" {
+			index := strings.Index(fwdFor, ",")
+			if index == -1 {
+				return fwdFor
+			}
+			return fwdFor[:index]
+		}
+
+		// Header X-Real-Ip
+		if realIP := strings.TrimSpace(string(ctx.Request.Header.Peek(revel.HdrRealIP))); realIP != "" {
+			return realIP
+		}
 	}
 
+	return ctx.RemoteIP().String()
 }
-func (f *FastHTTPServer) RequestHandler(ctx *fasthttp.RequestCtx) {
-	// TODO this
+
+func (f *FastHTTPServer) handleMux(ctx *fasthttp.RequestCtx) {
+	// TODO limit max size of body that can be read
 	//if maxRequestSize := int64(revel.Config.IntDefault("http.maxrequestsize", 0)); maxRequestSize > 0 {
 	//   buffer := &bytes.Buffer{}
 	//   err := ctx.Request.ReadLimitBody(buffer,maxRequestSize)
@@ -98,14 +189,24 @@ func (f *FastHTTPServer) RequestHandler(ctx *fasthttp.RequestCtx) {
 	f.ServerInit.Callback(context)
 }
 
-func (f *FastHTTPServer) Event(event revel.Event, args interface{}) {
+func (f *FastHTTPServer) Event(event revel.Event, args interface{}) revel.EventResponse {
 
 	switch event {
-	case revel.ENGINE_BEFORE_INITIALIZED:
 	case revel.ENGINE_STARTED:
+		signal.Notify(f.signalChan, os.Interrupt, os.Kill)
+		go func() {
+			_ = <-f.signalChan
+			serverLog.Info("Received quit singal Please wait ... ")
+			revel.RaiseEvent(revel.ENGINE_SHUTDOWN_REQUEST, nil)
+		}()
+	case revel.ENGINE_SHUTDOWN_REQUEST:
+		if err := f.graceful.Close();err!=nil {
+			serverLog.Fatal("Failed to close fasthttp server gracefully, exiting using os.exit","error",err)
+		}
+	default:
 
 	}
-
+	return 0
 }
 func (f *FastHTTPServer) Name() string {
 	return "fasthttp"

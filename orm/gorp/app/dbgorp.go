@@ -5,6 +5,7 @@ import (
 	"github.com/revel/revel/logger"
 	sq "gopkg.in/Masterminds/squirrel.v1"
 	"gopkg.in/gorp.v2"
+	"github.com/revel/revel"
 )
 
 // DB Gorp
@@ -65,6 +66,13 @@ func (dbGorp *DbGorp) OpenDb() (err error) {
 
 	// Create the database map
 	dbGorp.Map = &gorp.DbMap{Db: db, Dialect: dbGorp.Info.Dialect}
+
+	revel.OnAppStop(func(){
+		revel.RevelLog.Info("Closing the database (from module)")
+		if err := dbGorp.Close();err!=nil {
+			revel.AppLog.Error("Failed to close the database", "error",err)
+		}
+	})
 
 	return dbGorp.dbInit()
 }
