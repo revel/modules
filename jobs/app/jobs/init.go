@@ -7,7 +7,7 @@ import (
 var jobLog = revel.AppLog
 
 func init() {
-	revel.RegisterModuleInit(func(m *revel.Module){
+	revel.RegisterModuleInit(func(m *revel.Module) {
 		jobLog = m.Log
 	})
 }

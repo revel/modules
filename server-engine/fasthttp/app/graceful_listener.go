@@ -1,10 +1,10 @@
 package fasthttp
 
 import (
-	"time"
 	"fmt"
 	"net"
 	"sync/atomic"
+	"time"
 )
 
 type GracefulListener struct {

@@ -5,9 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"github.com/revel/cron"
 	"github.com/revel/modules/jobs/app/jobs"
 	"github.com/revel/revel"
-	"github.com/revel/cron"
 	"net/http"
 	"strings"
 )

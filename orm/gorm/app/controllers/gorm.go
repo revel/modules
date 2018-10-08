@@ -12,7 +12,7 @@ import (
 // Controller is a Revel controller with a pointer to the opened database
 type Controller struct {
 	*revel.Controller
-    DB *gorm.DB
+	DB *gorm.DB
 }
 
 func (c *Controller) setDB() revel.Result {
@@ -31,7 +31,7 @@ func (c *TxnController) Begin() revel.Result {
 
 	txn := gormdb.DB.Begin()
 	if txn.Error != nil {
-		c.Log.Panic("Transaction begine error","error",txn.Error)
+		c.Log.Panic("Transaction begine error", "error", txn.Error)
 	}
 
 	c.Txn = txn

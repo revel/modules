@@ -11,16 +11,17 @@ import (
 	"syscall"
 
 	"fmt"
+	"github.com/revel/modules/static/app/model"
 	"github.com/revel/revel"
 	"io/ioutil"
 	"net/http"
-	"github.com/revel/modules/static/app/model"
 )
 
 // Static file serving controller
 type Static struct {
 	*revel.Controller
 }
+
 const (
 	B int64 = 1 << (10 * iota) // ignore first value by assigning to blank identifier
 	KB
@@ -250,7 +251,7 @@ func (c *Static) processDir(fullPath, basePath string) (args map[string]interfac
 			}
 			fileInfo.Size = fileInfo.Size / divider
 			fileInfo.SizeType = size
-			fileInfo.NiceSize = fmt.Sprintf("%0.1d %s",fileInfo.Size, size)
+			fileInfo.NiceSize = fmt.Sprintf("%0.1d %s", fileInfo.Size, size)
 			fileInfo.Relative = fileInfo.Name
 		}
 		modified := f.ModTime()

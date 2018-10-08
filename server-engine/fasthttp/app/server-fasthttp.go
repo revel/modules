@@ -5,29 +5,29 @@ import (
 	"fmt"
 	"github.com/revel/revel"
 	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/reuseport"
 	"io"
 	"mime/multipart"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"os/signal"
+	"path"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
-	"sort"
-	"github.com/valyala/fasthttp/reuseport"
-	"os/signal"
-	"os"
-	"path"
 )
 
 type FastHTTPServer struct {
 	Server           *fasthttp.Server
 	ServerInit       *revel.EngineInit
 	MaxMultipartSize int64
-	HttpMuxList          revel.ServerMuxList
-	HasAppMux            bool
-	signalChan chan os.Signal
-  graceful net.Listener
+	HttpMuxList      revel.ServerMuxList
+	HasAppMux        bool
+	signalChan       chan os.Signal
+	graceful         net.Listener
 }
 
 var serverLog = revel.AppLog
@@ -76,12 +76,12 @@ func (f *FastHTTPServer) Start() {
 		time.Sleep(100 * time.Millisecond)
 		fmt.Printf("\nListening on fasthttp %s...\n", f.ServerInit.Address)
 	}()
-	if f.ServerInit.Network=="tcp" {
+	if f.ServerInit.Network == "tcp" {
 		f.ServerInit.Network = "tcp4"
 	}
 	listener, err := reuseport.Listen(f.ServerInit.Network, f.ServerInit.Address)
 	if err != nil {
-		serverLog.Fatal("Failed to listen http:", "error", err, "network",f.ServerInit.Network,"address", f.ServerInit.Address)
+		serverLog.Fatal("Failed to listen http:", "error", err, "network", f.ServerInit.Network, "address", f.ServerInit.Address)
 	}
 
 	// create a graceful shutdown listener
@@ -113,7 +113,7 @@ func (f *FastHTTPServer) RequestHandler(ctx *fasthttp.RequestCtx) {
 }
 
 // Handle the request and response for the servers mux
-func (f *FastHTTPServer) handleAppMux(ctx *fasthttp.RequestCtx) (result  bool) {
+func (f *FastHTTPServer) handleAppMux(ctx *fasthttp.RequestCtx) (result bool) {
 	// Check the prefix and split them
 	cpath := string(ctx.Path())
 	requestPath := path.Clean(cpath)
@@ -125,7 +125,7 @@ func (f *FastHTTPServer) handleAppMux(ctx *fasthttp.RequestCtx) (result  bool) {
 		defer func() {
 			if err := recover(); err != nil {
 				localLog.Error("An error was caught using the handler", "path", requestPath, "error", err)
-				fmt.Fprintf(ctx,"Unable to handle response for third part mux %v",err)
+				fmt.Fprintf(ctx, "Unable to handle response for third part mux %v", err)
 				ctx.Response.SetStatusCode(http.StatusInternalServerError)
 				return
 			}
@@ -140,7 +140,6 @@ func (f *FastHTTPServer) handleAppMux(ctx *fasthttp.RequestCtx) (result  bool) {
 	}
 	return
 }
-
 
 // ClientIP method returns client IP address from HTTP request.
 //
@@ -200,8 +199,8 @@ func (f *FastHTTPServer) Event(event revel.Event, args interface{}) revel.EventR
 			revel.RaiseEvent(revel.ENGINE_SHUTDOWN_REQUEST, nil)
 		}()
 	case revel.ENGINE_SHUTDOWN_REQUEST:
-		if err := f.graceful.Close();err!=nil {
-			serverLog.Fatal("Failed to close fasthttp server gracefully, exiting using os.exit","error",err)
+		if err := f.graceful.Close(); err != nil {
+			serverLog.Fatal("Failed to close fasthttp server gracefully, exiting using os.exit", "error", err)
 		}
 	default:
 
