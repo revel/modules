@@ -196,7 +196,7 @@ func (f *FastHTTPServer) Event(event revel.Event, args interface{}) revel.EventR
 		go func() {
 			_ = <-f.signalChan
 			serverLog.Info("Received quit singal Please wait ... ")
-			revel.RaiseEvent(revel.ENGINE_SHUTDOWN_REQUEST, nil)
+			revel.StopServer(nil)
 		}()
 	case revel.ENGINE_SHUTDOWN_REQUEST:
 		if err := f.graceful.Close(); err != nil {
