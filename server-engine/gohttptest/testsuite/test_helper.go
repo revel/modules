@@ -38,9 +38,9 @@ func RevelTestHelper(m *testing.M, mode string, runner func(port int)) {
 
 	revel.RevelLog.Info("Initializing the engine")
 	// go test -coverprofile=coverage.out github.com/revel/examples/booking/app/controllers/  -args -revel.importPath=github.com/revel/examples/booking
-	if len(*importPath)==0 {
+	if len(*importPath) == 0 {
 		// TODO add possible detection of import path from executable
-		for x:=0;x<len(os.Args);x++ {
+		for x := 0; x < len(os.Args); x++ {
 			println("App path ", os.Args[x])
 		}
 		serverLog.Fatal("No import path specified, aborting. Start test by using -args -revel.importPath=<your app import path>")

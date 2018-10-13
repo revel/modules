@@ -23,16 +23,16 @@ func init() {
 	})
 	revel.RegisterModuleInit(func(m *revel.Module) {
 		serverLog = m.Log
-	})}
+	})
+}
 
 type GoHttpServer struct {
-	Server           *http.Server // Although unused this is here just to support possible code requests
+	Server           *http.Server      // Although unused this is here just to support possible code requests
 	ServerInit       *revel.EngineInit // The intiialization data
 	MaxMultipartSize int64
 	TestChannel      chan *TestRequest
 	StartedChan      chan bool
 }
-
 
 func (g *GoHttpServer) Init(init *revel.EngineInit) {
 	g.TestChannel = make(chan *TestRequest)
@@ -61,7 +61,7 @@ func (g *GoHttpServer) Init(init *revel.EngineInit) {
 func (g *GoHttpServer) Start() {
 	go func() {
 		time.Sleep(100 * time.Millisecond)
-		fmt.Printf("Revel Listening on %d...\n",g.ServerInit.Port)
+		fmt.Printf("Revel Listening on %d...\n", g.ServerInit.Port)
 	}()
 	// The idea is for this thread to wait for requests through the channel
 	g.StartedChan <- true

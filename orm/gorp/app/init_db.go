@@ -6,23 +6,24 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres package
 	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
 	"github.com/revel/revel"
+	"github.com/revel/revel/logger"
 	sq "gopkg.in/Masterminds/squirrel.v1"
 	"gopkg.in/gorp.v2"
-	"github.com/revel/revel/logger"
 )
 
 var (
 	// The database map to use to populate data
-	Db = &DbGorp{}
+	Db           = &DbGorp{}
 	moduleLogger logger.MultiLogger
 )
+
 func init() {
-	revel.RegisterModuleInit(func(module *revel.Module){
+	revel.RegisterModuleInit(func(module *revel.Module) {
 		moduleLogger = module.Log
 		moduleLogger.Debug("Assigned Logger")
 	})
 }
-func (dbResult *DbGorp)InitDb(open bool) (err error) {
+func (dbResult *DbGorp) InitDb(open bool) (err error) {
 	dbInfo := dbResult.Info
 
 	switch dbInfo.DbDriver {
@@ -57,7 +58,7 @@ func (dbResult *DbGorp)InitDb(open bool) (err error) {
 }
 
 // Initialize the database from revel.Config
-func InitDb(dbResult *DbGorp) (error) {
+func InitDb(dbResult *DbGorp) error {
 	params := DbInfo{}
 	params.DbDriver = revel.Config.StringDefault("db.driver", "sqlite3")
 	params.DbHost = revel.Config.StringDefault("db.host", "localhost")

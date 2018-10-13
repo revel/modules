@@ -9,8 +9,8 @@ import (
 	"github.com/casbin/casbin"
 	"github.com/casbin/casbin/util"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/revel/revel"
 	"github.com/revel/modules/orm/gorm/app"
+	"github.com/revel/revel"
 )
 
 var adapter = NewAdapter(DefaultDbParams())

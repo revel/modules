@@ -57,6 +57,7 @@ const (
 	EndJob
 	JobLongrunning
 )
+
 // Creates a container to run the group of workers (up to a max of maxNumWorkers), does not return to all workers are completed)
 // If returnResults is true then the task MUST write to the DbWorker.OutputChannel once for every task
 func WorkParallel(db *DbGorp, tasks []func(worker *DbWorker), returnResults bool, maxNumWorkers int, timeouts int) (results []interface{}, err error) {

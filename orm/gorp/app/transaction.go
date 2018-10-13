@@ -1,13 +1,15 @@
 package gorp
+
 import (
-	gorpa "gopkg.in/gorp.v2"
 	"database/sql"
 	sq "gopkg.in/Masterminds/squirrel.v1"
+	gorpa "gopkg.in/gorp.v2"
 )
+
 type (
 	// This is a small wrapped around gorp.Transaction so you can make use of the builder statements as well
 	Transaction struct {
-		Map *gorpa.Transaction
+		Map    *gorpa.Transaction
 		dbgorp *DbGorp
 	}
 )
@@ -25,7 +27,7 @@ func (txn *Transaction) Select(i interface{}, builder sq.SelectBuilder) (l []int
 		if err != nil && gorpa.NonFatalError(err) {
 			return list, nil
 		}
-		if err==sql.ErrNoRows {
+		if err == sql.ErrNoRows {
 			err = nil
 		}
 		return list, err
@@ -76,7 +78,7 @@ func (txn *Transaction) Update(list ...interface{}) (int64, error) {
 	return txn.Map.Update(list...)
 }
 func (txn *Transaction) Get(i interface{}, keys ...interface{}) (interface{}, error) {
-	return txn.Map.Get(i,keys...)
+	return txn.Map.Get(i, keys...)
 }
 func (txn *Transaction) Delete(i ...interface{}) (int64, error) {
 	return txn.Map.Delete(i...)
