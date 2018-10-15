@@ -126,7 +126,7 @@ func (g *GoHttpServer) Engine() interface{} {
 	return g.Server
 }
 
-func (g *GoHttpServer) Event(event revel.Event, args interface{}) {
+func (g *GoHttpServer) Event(event revel.Event, args interface{}) revel.EventResponse {
 
 }
 
