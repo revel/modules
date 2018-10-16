@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/revel/revel"
+	"github.com/revel/revel/session"
 )
 
 func NewTestController(w http.ResponseWriter, r *http.Request) *revel.Controller {
@@ -32,7 +33,7 @@ func TestTokenInSession(t *testing.T) {
 	getRequest, _ := http.NewRequest("GET", "http://www.example.com/", nil)
 	c := NewTestController(resp, getRequest)
 
-	c.Session = make(revel.Session)
+	c.Session = make(session.Session)
 
 	testFilters[0](c, testFilters)
 
@@ -45,7 +46,7 @@ func TestPostWithoutToken(t *testing.T) {
 	resp := httptest.NewRecorder()
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
 	c := NewTestController(resp, postRequest)
-	c.Session = make(revel.Session)
+	c.Session = make(session.Session)
 
 	testFilters[0](c, testFilters)
 
@@ -59,10 +60,10 @@ func TestNoReferrer(t *testing.T) {
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
 
 	c := NewTestController(resp, postRequest)
-	c.Session = make(revel.Session)
+	c.Session = make(session.Session)
 
 	RefreshToken(c)
-	token := c.Session["csrf_token"]
+	token := c.Session["csrf_token"].(string)
 
 	// make a new request with the token
 	data := url.Values{}
@@ -87,10 +88,10 @@ func TestRefererHttps(t *testing.T) {
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
 	c := NewTestController(resp, postRequest)
 
-	c.Session = make(revel.Session)
+	c.Session = make(session.Session)
 
 	RefreshToken(c)
-	token := c.Session["csrf_token"]
+	token := c.Session["csrf_token"].(string)
 
 	// make a new request with the token
 	data := url.Values{}
@@ -116,10 +117,10 @@ func TestHeaderWithToken(t *testing.T) {
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
 	c := NewTestController(resp, postRequest)
 
-	c.Session = make(revel.Session)
+	c.Session = make(session.Session)
 
 	RefreshToken(c)
-	token := c.Session["csrf_token"]
+	token := c.Session["csrf_token"].(string)
 
 	// make a new request with the token
 	formPostRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
@@ -142,10 +143,10 @@ func TestFormPostWithToken(t *testing.T) {
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/", nil)
 	c := NewTestController(resp, postRequest)
 
-	c.Session = make(revel.Session)
+	c.Session = make(session.Session)
 
 	RefreshToken(c)
-	token := c.Session["csrf_token"]
+	token := c.Session["csrf_token"].(string)
 
 	// make a new request with the token
 	data := url.Values{}
@@ -173,7 +174,7 @@ func TestNoTokenInArgsWhenCORs(t *testing.T) {
 	getRequest.Header.Add("Referer", "http://www.example2.com/")
 
 	c := NewTestController(resp, getRequest)
-	c.Session = make(revel.Session)
+	c.Session = make(session.Session)
 
 	testFilters[0](c, testFilters)
 

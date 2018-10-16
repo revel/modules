@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/revel/revel"
+	"github.com/revel/revel/session"
 )
 
 func TestExemptPath(t *testing.T) {
@@ -14,7 +14,7 @@ func TestExemptPath(t *testing.T) {
 	resp := httptest.NewRecorder()
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/Controller/Action", nil)
 	c := NewTestController(resp, postRequest)
-	c.Session = make(revel.Session)
+	c.Session = make(session.Session)
 
 	testFilters[0](c, testFilters)
 
@@ -29,7 +29,7 @@ func TestExemptPathCaseInsensitive(t *testing.T) {
 	resp := httptest.NewRecorder()
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/controller/action", nil)
 	c := NewTestController(resp, postRequest)
-	c.Session = make(revel.Session)
+	c.Session = make(session.Session)
 
 	testFilters[0](c, testFilters)
 
@@ -44,7 +44,7 @@ func TestExemptAction(t *testing.T) {
 	resp := httptest.NewRecorder()
 	postRequest, _ := http.NewRequest("POST", "http://www.example.com/Controller/Action", nil)
 	c := NewTestController(resp, postRequest)
-	c.Session = make(revel.Session)
+	c.Session = make(session.Session)
 	c.Action = "Controller.Action"
 
 	testFilters[0](c, testFilters)
