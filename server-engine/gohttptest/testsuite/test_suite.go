@@ -28,9 +28,9 @@ func NewTestSuite(t *testing.T) *TestSuite {
 }
 
 // Define a new test suite with a custom session engine
-func NewTestSuiteEngine(engine revel.SessionEngine, t *testing.T) TestSuite {
+func NewTestSuiteEngine(engine revel.SessionEngine, t *testing.T) *TestSuite {
 	jar, _ := cookiejar.New(nil)
-	ts := TestSuite{
+	ts := &TestSuite{
 		Client:        &http.Client{Jar: jar},
 		Session:       session.NewSession(),
 		SessionEngine: engine,
@@ -45,7 +45,7 @@ type TestSuite struct {
 	Response        *httptest.ResponseRecorder // The response recorder
 	ResponseChannel chan bool                  // The response channel
 	Session         session.Session            // The session
-	SessionEngine   *revel.SessionCookieEngine // The session engine
+	SessionEngine   revel.SessionEngine        // The session engine
 	Sent            bool                       // True if sent
 	T               *testing.T                 // The test to handle any errors
 	Client          *http.Client               // The client to extract the cookie data
@@ -267,7 +267,7 @@ func (r *TestRequest) MakeRequest() *TestRequest {
 	// Create the controller again to receive the response for processing.
 	context := revel.NewGoContext(nil)
 	// Set the request with the header from the response..
-	newRequest := &http.Request{URL: r.URL, Header: r.testSuite.Response.Header}
+	newRequest := &http.Request{URL: r.URL, Header: r.testSuite.Response.Header()}
 	for _, cookie := range r.testSuite.Client.Jar.Cookies(r.Request.URL) {
 		newRequest.AddCookie(cookie)
 	}
