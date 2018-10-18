@@ -35,6 +35,7 @@ func NewTestSuiteEngine(engine revel.SessionEngine, t *testing.T) *TestSuite {
 		Session:       session.NewSession(),
 		SessionEngine: engine,
 		T:             t,
+		ResponseChannel:make(chan bool, 1),
 	}
 
 	return ts
