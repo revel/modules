@@ -71,7 +71,6 @@ func (g *GoHttpServer) Start() {
 			task.testSuite.Response = httptest.NewRecorder()
 			g.Handle(task.testSuite.Response, task.Request)
 			task.testSuite.ResponseChannel <- true
-
 		} else {
 			break
 		}
