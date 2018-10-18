@@ -42,7 +42,9 @@ func RefreshToken(c *revel.Controller) string {
 //
 // Usage:
 //  1) Add `csrf.CsrfFilter` to the app's filters (it must come after the revel.SessionFilter).
-//  2) Add CSRF fields to a form with the template tag `{{ csrftoken . }}`. The filter adds a function closure to the `ViewArgs` that can pull out the secret and make the token as-needed, caching the value in the request. Ajax support provided through the `X-CSRFToken` header.
+//  2) Add CSRF fields to a form with the template tag `{{ csrftoken . }}`.
+// The filter adds a function closure to the `ViewArgs` that can pull out the secret and make the token as-needed,
+// caching the value in the request. Ajax support provided through the `X-CSRFToken` header.
 func CsrfFilter(c *revel.Controller, fc []revel.Filter) {
 	t, foundToken := c.Session["csrf_token"]
 	var token string
@@ -57,7 +59,22 @@ func CsrfFilter(c *revel.Controller, fc []revel.Filter) {
 		c.Result = c.Forbidden("REVEL CSRF: Unable to fetch referer")
 		return
 	}
-	isSameOrigin := sameOrigin(c.Request.URL, referer)
+
+	requestUrl := c.Request.URL
+	if requestUrl.Scheme=="" {
+		// Fix the Request.URL, it is missing information, go http server does this
+		if revel.HTTPSsl {
+			requestUrl.Scheme = "https"
+		} else {
+			requestUrl.Scheme = "http"
+		}
+		fixedUrl := requestUrl.Scheme + "://" + c.Request.Host + c.Request.URL.RawPath
+		if purl, err := url.Parse(fixedUrl); err == nil {
+			requestUrl = purl
+		}
+	}
+
+	isSameOrigin := sameOrigin(requestUrl, referer)
 
 	// If the Request method isn't in the white listed methods
 	if !allowedMethods[c.Request.Method] && !IsExempt(c) {
