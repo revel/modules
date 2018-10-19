@@ -96,7 +96,7 @@ func (g *GoHttpServer) Handle(w http.ResponseWriter, r *http.Request) {
 		websocket.Handler(func(ws *websocket.Conn) {
 			//Override default Read/Write timeout with sane value for a web socket request
 			if err := ws.SetDeadline(time.Now().Add(time.Hour * 24)); err != nil {
-				revel.ERROR.Println("SetDeadLine failed:", err)
+				serverLog.Error("SetDeadLine failed:", "error", err)
 			}
 			r.Method = "WS"
 			context.Request.WebSocket = ws
