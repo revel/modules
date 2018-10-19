@@ -176,7 +176,7 @@ func serve(c Static, prefix, filepath string, allowDir bool) revel.Result {
 	isDir := finfo.Mode().IsDir()
 	// Disallow directory listing
 	if isDir && !allowDir {
-		revel.WARN.Printf("Attempted directory listing of %s", fname)
+		c.Log.Warn("Attempted directory listing of %s", fname)
 		return c.Forbidden("Directory listing not allowed")
 	}
 
