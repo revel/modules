@@ -22,7 +22,6 @@ func RevelTestHelper(m *testing.M, mode string, runner func(port int)) {
 			revel.Config.SetOption("module.go-test", "github.com/revel/modules/server-engine/gohttptest")
 
 		} else if event == revel.ENGINE_STARTED {
-			println("Sending notification to unlock")
 			go func() {
 				// Wait for the server to send back a start response
 				<-revel.CurrentEngine.(*GoHttpServer).StartedChan
