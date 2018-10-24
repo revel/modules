@@ -33,7 +33,7 @@ func (g *ServerNewRelic) Init(init *revel.EngineInit) {
 	g.GoHttpServer.Init(init)
 }
 
-func (nr *ServerNewRelic) Event(event revel.Event, args interface{}) {
+func (nr *ServerNewRelic) Event(event revel.Event, args interface{}) (revel.EventResponse) {
 
 	switch event {
 	case revel.ENGINE_BEFORE_INITIALIZED:
@@ -65,7 +65,7 @@ func (nr *ServerNewRelic) Event(event revel.Event, args interface{}) {
 
 	}
 
-	nr.GoHttpServer.Event(event, args)
+	return nr.GoHttpServer.Event(event, args)
 }
 func (nr *ServerNewRelic) Name() string {
 	return "newrelic"
