@@ -1,4 +1,4 @@
-modules/auth
+modules/basic/auth
 ===============
 
 Basic user/auth module
