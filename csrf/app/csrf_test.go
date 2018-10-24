@@ -10,6 +10,7 @@ import (
 
 	"github.com/revel/revel"
 	"github.com/revel/revel/session"
+	"github.com/revel/revel/logger"
 )
 
 func NewTestController(w http.ResponseWriter, r *http.Request) *revel.Controller {
@@ -17,6 +18,7 @@ func NewTestController(w http.ResponseWriter, r *http.Request) *revel.Controller
 	context.Request.SetRequest(r)
 	context.Response.SetResponse(w)
 	c := revel.NewController(context)
+	c.Log = logger.New("module","test")
 	return c
 }
 
