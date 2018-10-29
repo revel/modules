@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"sync"
 	"time"
+	"errors"
 )
 
 // The worker container
@@ -120,12 +121,12 @@ func (container *DbWorkerContainer) Start() (err error) {
 				state, source := result()
 				if state != Start {
 					container.Close(5)
-					err = fmt.Errorf("Failed to start workers %d", source)
+					err = fmt.Errorf("Failed to start workers %v", source)
 					return
 				}
 			case <-time.After(time.Second * time.Duration(container.StartWorkTimeout)):
 				container.Close(5)
-				err = fmt.Errorf("Failed to start worker timeout")
+				err = errors.New("Failed to start worker timeout")
 				return
 			}
 		} else {
@@ -133,7 +134,7 @@ func (container *DbWorkerContainer) Start() (err error) {
 			state, source := result()
 			if state != Start {
 				container.Close(5)
-				err = fmt.Errorf("Failed to start workers %d", source)
+				err = fmt.Errorf("Failed to start workers %v", source)
 				return
 			}
 		}
@@ -181,7 +182,7 @@ func startWorker(container *DbWorkerContainer, db *DbGorp, id int) {
 	container.Workers = append(container.Workers, worker)
 	container.mutex.Unlock()
 	// Only monitor jobs if Status function defined and a timeout is also defined
-	if worker.workInfo.Status != nil && container.LongWorkTimeout > 0 {
+	if container.LongWorkTimeout > 0 {
 		worker.TimeoutChannel = make(chan *timeoutInfo)
 		go worker.TimeInfo.start(worker.TimeoutChannel, container.LongWorkTimeout)
 	}
@@ -190,16 +191,12 @@ func startWorker(container *DbWorkerContainer, db *DbGorp, id int) {
 
 // Starts the worker, continues running until inputchannel is closed
 func (worker *DbWorker) start() {
-	if worker.workInfo.Status != nil {
-		worker.workInfo.Status(Start, worker)
-	}
+	worker.workInfo.Status(Start, worker)
 	worker.ControlChannel <- func() (WorkerPhase, *DbWorker) { return Start, worker }
 	for job := range worker.InputChannel {
 		worker.invoke(job)
 	}
-	if worker.workInfo.Status != nil {
-		worker.workInfo.Status(Stop, worker)
-	}
+	worker.workInfo.Status(Stop, worker)
 	worker.ControlChannel <- func() (WorkerPhase, *DbWorker) { return Stop, worker }
 	if worker.TimeoutChannel != nil {
 		close(worker.TimeoutChannel)

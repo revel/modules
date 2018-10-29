@@ -20,18 +20,21 @@ import (
 	"time"
 )
 
+// The engine
 type FastHTTPServer struct {
-	Server           *fasthttp.Server
-	ServerInit       *revel.EngineInit
-	MaxMultipartSize int64
-	HttpMuxList      revel.ServerMuxList
-	HasAppMux        bool
-	signalChan       chan os.Signal
-	graceful         net.Listener
+	Server           *fasthttp.Server    // The server
+	ServerInit       *revel.EngineInit   // The server initialization data
+	MaxMultipartSize int64               // The max form size
+	HttpMuxList      revel.ServerMuxList // The list of muxers
+	HasAppMux        bool                // True if has a mux
+	signalChan       chan os.Signal      // The channel to stop the server
+	graceful         net.Listener        // The graceful listener
 }
 
+// The server log
 var serverLog = revel.AppLog
 
+// Called to initialize
 func init() {
 	revel.RegisterServerEngine("fasthttp", func() revel.ServerEngine {
 		return &FastHTTPServer{}
@@ -169,6 +172,7 @@ func HttpClientIP(ctx *fasthttp.RequestCtx) string {
 	return ctx.RemoteIP().String()
 }
 
+// Handle response
 func (f *FastHTTPServer) handleMux(ctx *fasthttp.RequestCtx) {
 	// TODO limit max size of body that can be read
 	//if maxRequestSize := int64(revel.Config.IntDefault("http.maxrequestsize", 0)); maxRequestSize > 0 {
@@ -188,6 +192,7 @@ func (f *FastHTTPServer) handleMux(ctx *fasthttp.RequestCtx) {
 	f.ServerInit.Callback(context)
 }
 
+// Handle an event generated from Revel
 func (f *FastHTTPServer) Event(event revel.Event, args interface{}) revel.EventResponse {
 
 	switch event {
@@ -207,12 +212,18 @@ func (f *FastHTTPServer) Event(event revel.Event, args interface{}) revel.EventR
 	}
 	return 0
 }
+
+// Return the engine name
 func (f *FastHTTPServer) Name() string {
 	return "fasthttp"
 }
+
+// Return the engine
 func (f *FastHTTPServer) Engine() interface{} {
 	return f
 }
+
+// Returns stats for the engine
 func (g *FastHTTPServer) Stats() map[string]interface{} {
 	return map[string]interface{}{
 		"FastHTTP Engine Context": fastHttpContextStack.String(),
@@ -221,46 +232,53 @@ func (g *FastHTTPServer) Stats() map[string]interface{} {
 }
 
 type (
+	// The context
 	FastHttpContext struct {
-		Request  *FastHttpRequest
-		Response *FastHttpResponse
+		Request  *FastHttpRequest  // The request
+		Response *FastHttpResponse // The respnse
 	}
 
+	// The request
 	FastHttpRequest struct {
-		toQuery         bool
-		url             *url.URL
-		query           url.Values
-		Original        *fasthttp.RequestCtx
-		FormParsed      bool
-		form            url.Values
-		MultiFormParsed bool
-		// WebSocket       *websocket.Conn
-		ParsedForm *FastHttpMultipartForm
-		header     *FastHttpHeader
-		Engine     *FastHTTPServer
+		url             *url.URL             // The url of request
+		toQuery         bool                 // True if converted to query
+		query           url.Values           // The translated query
+		Original        *fasthttp.RequestCtx // The original
+		FormParsed      bool                 // True if the form was parsed
+		form            url.Values           // The form values
+		MultiFormParsed bool                 // True if multipart form
+		// WebSocket       *websocket.Conn // No websocket
+		ParsedForm *FastHttpMultipartForm // The parsed form
+		header     *FastHttpHeader        // The request header
+		Engine     *FastHTTPServer        // The response header
 	}
 
+	// The response
 	FastHttpResponse struct {
-		Original *fasthttp.RequestCtx
-		header   *FastHttpHeader
-		Writer   io.Writer
-		Engine   *FastHTTPServer
+		Original *fasthttp.RequestCtx // The original
+		header   *FastHttpHeader      // The header
+		Writer   io.Writer            // The writer
+		Engine   *FastHTTPServer      // The engine
 	}
+	// The form
 	FastHttpMultipartForm struct {
-		Form *multipart.Form
+		Form *multipart.Form // The embedded form
 	}
+	// The header
 	FastHttpHeader struct {
-		Source     interface{}
-		isResponse bool
+		Source     interface{} // The source
+		isResponse bool        // True if this is a response header
 	}
-	FastHttpCookie []byte
+	// The cookie
+	FastHttpCookie []byte // The cookie
 )
 
 var (
-	fastHttpContextStack       *revel.SimpleLockStack
-	fastHttpMultipartFormStack *revel.SimpleLockStack
+	fastHttpContextStack       *revel.SimpleLockStack // context stack
+	fastHttpMultipartFormStack *revel.SimpleLockStack // form stack
 )
 
+// Create a new context
 func NewFastHttpContext(instance *FastHTTPServer) *FastHttpContext {
 	if instance == nil {
 		instance = &FastHTTPServer{MaxMultipartSize: 32 << 20}
@@ -275,21 +293,30 @@ func NewFastHttpContext(instance *FastHTTPServer) *FastHttpContext {
 	c.Request.header.Source = c.Request
 	return c
 }
+
+// Called to get the request
 func (c *FastHttpContext) GetRequest() revel.ServerRequest {
 	return c.Request
 }
+
+// Called to get the response
 func (c *FastHttpContext) GetResponse() revel.ServerResponse {
 	return c.Response
 }
+
+// Called to set the context
 func (c *FastHttpContext) SetContext(context *fasthttp.RequestCtx) {
 	c.Response.SetContext(context)
 	c.Request.SetContext(context)
 }
+
+// Called to destroy the context
 func (c *FastHttpContext) Destroy() {
 	c.Response.Destroy()
 	c.Request.Destroy()
 }
 
+// Gets the value from the request
 func (r *FastHttpRequest) Get(key int) (value interface{}, err error) {
 	switch key {
 	case revel.HTTP_SERVER_HEADER:
@@ -323,10 +350,13 @@ func (r *FastHttpRequest) Get(key int) (value interface{}, err error) {
 
 	return
 }
+
+// Sets the request with the value
 func (r *FastHttpRequest) Set(key int, value interface{}) bool {
 	return false
 }
 
+// Returns the query string
 func (r *FastHttpRequest) GetQuery() url.Values {
 	if !r.toQuery {
 		// Attempt to convert to query
@@ -338,17 +368,20 @@ func (r *FastHttpRequest) GetQuery() url.Values {
 	}
 	return r.query
 }
+
+// Returns the form
 func (r *FastHttpRequest) GetForm() (url.Values, error) {
 	if !r.FormParsed {
 		r.form = url.Values{}
 		r.Original.PostArgs().VisitAll(func(key, value []byte) {
-			println("Set value", string(key), string(value))
 			r.query.Set(string(key), string(value))
 		})
 		r.FormParsed = true
 	}
 	return r.form, nil
 }
+
+// Returns the form
 func (r *FastHttpRequest) GetMultipartForm() (revel.ServerMultipartForm, error) {
 	if !r.MultiFormParsed {
 		// TODO Limit size r.Engine.MaxMultipartSize
@@ -363,16 +396,24 @@ func (r *FastHttpRequest) GetMultipartForm() (revel.ServerMultipartForm, error) 
 
 	return r.ParsedForm, nil
 }
+
+// Returns the request header
 func (r *FastHttpRequest) GetHeader() revel.ServerHeader {
 	return r.header
 }
+
+// Returns the raw request
 func (r *FastHttpRequest) GetRaw() interface{} {
 	return r.Original
 }
+
+// Sets the context
 func (r *FastHttpRequest) SetContext(req *fasthttp.RequestCtx) {
 	r.Original = req
 
 }
+
+// Called when request is done
 func (r *FastHttpRequest) Destroy() {
 	r.Original = nil
 	r.FormParsed = false
@@ -382,6 +423,7 @@ func (r *FastHttpRequest) Destroy() {
 
 }
 
+// gets the key from the response
 func (r *FastHttpResponse) Get(key int) (value interface{}, err error) {
 	switch key {
 	case revel.HTTP_SERVER_HEADER:
@@ -396,6 +438,7 @@ func (r *FastHttpResponse) Get(key int) (value interface{}, err error) {
 	return
 }
 
+// Sets the key with the value
 func (r *FastHttpResponse) Set(key int, value interface{}) (set bool) {
 	switch key {
 	case revel.ENGINE_RESPONSE_STATUS:
@@ -408,15 +451,22 @@ func (r *FastHttpResponse) Set(key int, value interface{}) (set bool) {
 	return
 }
 
+// Return the response writer
 func (r *FastHttpResponse) GetWriter() io.Writer {
 	return r.Writer
 }
+
+// Return the header
 func (r *FastHttpResponse) Header() revel.ServerHeader {
 	return r.header
 }
+
+// Returns the raw response
 func (r *FastHttpResponse) GetRaw() interface{} {
 	return r.Original
 }
+
+// Writes a stream to the response
 func (r *FastHttpResponse) WriteStream(name string, contentlen int64, modtime time.Time, reader io.Reader) error {
 
 	// do a simple io.Copy, we do it directly into the writer which may be configured to be a compressed
@@ -449,6 +499,8 @@ func (r *FastHttpResponse) WriteStream(name string, contentlen int64, modtime ti
 
 	return nil
 }
+
+// Called to reset this response
 func (r *FastHttpResponse) Destroy() {
 	if c, ok := r.Writer.(io.Closer); ok {
 		c.Close()
@@ -457,18 +509,26 @@ func (r *FastHttpResponse) Destroy() {
 	r.Writer = nil
 
 }
+
+// Sets the context
 func (r *FastHttpResponse) SetContext(w *fasthttp.RequestCtx) {
 	r.Original = w
 	r.Writer = w.Response.BodyWriter()
 }
+
+// Sets the writer
 func (r *FastHttpResponse) SetWriter(writer io.Writer) {
 	r.Writer = writer
 }
+
+// Sets a cookie
 func (r *FastHttpHeader) SetCookie(cookie string) {
 	if r.isResponse {
 		r.Source.(*FastHttpResponse).Original.Response.Header.Add("Set-Cookie", cookie)
 	}
 }
+
+// Returns a cookie
 func (r *FastHttpHeader) GetCookie(key string) (value revel.ServerCookie, err error) {
 	if !r.isResponse {
 		var cookie []byte
@@ -481,21 +541,54 @@ func (r *FastHttpHeader) GetCookie(key string) (value revel.ServerCookie, err er
 	}
 	return
 }
+
+// Sets (replaces) a header key
 func (r *FastHttpHeader) Set(key string, value string) {
 	if r.isResponse {
 		r.Source.(*FastHttpResponse).Original.Response.Header.Set(key, value)
 	}
 }
+
+// Adds a header key
 func (r *FastHttpHeader) Add(key string, value string) {
 	if r.isResponse {
 		r.Source.(*FastHttpResponse).Original.Response.Header.Add(key, value)
 	}
 }
+
+// Deletes a header key
 func (r *FastHttpHeader) Del(key string) {
 	if r.isResponse {
 		r.Source.(*FastHttpResponse).Original.Response.Header.Del(key)
 	}
 }
+
+// Returns the header keys
+func (r *FastHttpHeader) GetKeys() (value []string) {
+	addValue := func(k, v []byte) {
+		found := false
+		key := string(k)
+		for _, r := range value {
+			if key == r {
+				found = true
+				break
+			}
+		}
+		if !found {
+			value = append(value, key)
+		}
+
+	}
+	if !r.isResponse {
+		r.Source.(*FastHttpRequest).Original.Request.Header.VisitAll(addValue)
+
+	} else {
+		r.Source.(*FastHttpResponse).Original.Response.Header.VisitAll(addValue)
+	}
+	return
+}
+
+// returns the header value
 func (r *FastHttpHeader) Get(key string) (value []string) {
 	if !r.isResponse {
 		value = strings.Split(string(r.Source.(*FastHttpRequest).Original.Request.Header.Peek(key)), ",")
@@ -504,20 +597,30 @@ func (r *FastHttpHeader) Get(key string) (value []string) {
 	}
 	return
 }
+
+// Sets the header status
 func (r *FastHttpHeader) SetStatus(statusCode int) {
 	if r.isResponse {
 		r.Source.(*FastHttpResponse).Original.Response.SetStatusCode(statusCode)
 	}
 }
+
+// Returns the cookie value
 func (r FastHttpCookie) GetValue() string {
 	return string(r)
 }
+
+// Returns the files for a form
 func (f *FastHttpMultipartForm) GetFiles() map[string][]*multipart.FileHeader {
 	return f.Form.File
 }
+
+// Returns the values for a form
 func (f *FastHttpMultipartForm) GetValues() url.Values {
 	return url.Values(f.Form.Value)
 }
+
+// Remove all the vlaues from a form
 func (f *FastHttpMultipartForm) RemoveAll() error {
 	return f.Form.RemoveAll()
 }

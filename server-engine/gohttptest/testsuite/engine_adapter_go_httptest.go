@@ -277,6 +277,21 @@ func (r *GoResponse) Get(key int) (value interface{}, err error) {
 	}
 	return
 }
+
+// Returns list of header keys
+func (r *GoHeader) GetKeys() (value []string) {
+	if !r.isResponse {
+		for key := range r.Source.(*GoRequest).Original.Header {
+			value = append(value, key)
+		}
+	} else {
+		for key := range r.Source.(*GoResponse).Original.Header() {
+			value = append(value, key)
+		}
+	}
+	return
+}
+
 func (r *GoResponse) Set(key int, value interface{}) (set bool) {
 	switch key {
 	case revel.HTTP_WRITER:
