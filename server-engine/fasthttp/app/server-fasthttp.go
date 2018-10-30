@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"github.com/revel/revel/utils"
 )
 
 // The engine
@@ -47,10 +48,10 @@ func init() {
 // Called to initialize the FastHttpServer
 func (f *FastHTTPServer) Init(init *revel.EngineInit) {
 	f.MaxMultipartSize = int64(revel.Config.IntDefault("server.request.max.multipart.filesize", 32)) << 20 /* 32 MB */
-	fastHttpContextStack = revel.NewStackLock(revel.Config.IntDefault("server.context.stack", 100),
+	fastHttpContextStack = utils.NewStackLock(revel.Config.IntDefault("server.context.stack", 100),
 		revel.Config.IntDefault("server.context.maxstack", 200),
 		func() interface{} { return NewFastHttpContext(f) })
-	fastHttpMultipartFormStack = revel.NewStackLock(revel.Config.IntDefault("server.form.stack", 100),
+	fastHttpMultipartFormStack = utils.NewStackLock(revel.Config.IntDefault("server.form.stack", 100),
 		revel.Config.IntDefault("server.form.maxstack", 200),
 		func() interface{} { return &FastHttpMultipartForm{} })
 
@@ -274,8 +275,8 @@ type (
 )
 
 var (
-	fastHttpContextStack       *revel.SimpleLockStack // context stack
-	fastHttpMultipartFormStack *revel.SimpleLockStack // form stack
+	fastHttpContextStack       *utils.SimpleLockStack // context stack
+	fastHttpMultipartFormStack *utils.SimpleLockStack // form stack
 )
 
 // Create a new context
