@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/revel/revel"
+	"github.com/revel/revel/utils"
 	"golang.org/x/net/websocket"
 	"io"
 	"mime/multipart"
@@ -38,12 +39,12 @@ func (g *GoHttpServer) Init(init *revel.EngineInit) {
 	g.TestChannel = make(chan *TestRequest)
 	g.StartedChan = make(chan bool)
 	g.MaxMultipartSize = int64(revel.Config.IntDefault("server.request.max.multipart.filesize", 32)) << 20 /* 32 MB */
-	goContextStack = revel.NewStackLock(revel.Config.IntDefault("server.context.stack", 100),
+	goContextStack = utils.NewStackLock(revel.Config.IntDefault("server.context.stack", 100),
 		revel.Config.IntDefault("server.context.maxstack", 200),
 		func() interface{} {
 			return NewGOContext(g)
 		})
-	goMultipartFormStack = revel.NewStackLock(revel.Config.IntDefault("server.form.stack", 100),
+	goMultipartFormStack = utils.NewStackLock(revel.Config.IntDefault("server.form.stack", 100),
 		revel.Config.IntDefault("server.form.maxstack", 200),
 		func() interface{} { return &GoMultipartForm{} })
 	g.ServerInit = init
@@ -167,8 +168,8 @@ type (
 )
 
 var (
-	goContextStack       *revel.SimpleLockStack
-	goMultipartFormStack *revel.SimpleLockStack
+	goContextStack       *utils.SimpleLockStack
+	goMultipartFormStack *utils.SimpleLockStack
 )
 
 func NewGOContext(instance *GoHttpServer) *GoContext {

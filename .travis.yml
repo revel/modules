@@ -30,6 +30,7 @@ install:
   - git clone -b $REVEL_BRANCH git://github.com/revel/config ../config/
   - git clone -b $REVEL_BRANCH git://github.com/revel/cron ../cron/
   - go get -t -v github.com/revel/revel/...
+  - go get -t -v github.com/revel/modules/...
 
 script:
   - go test -v github.com/revel/modules/csrf/...
@@ -40,5 +41,5 @@ script:
 matrix:
   allow_failures:
     - go: tip
-    - go: 1.6
-      os: osx
+    - go: "1.8.x"
+    - os: "windows"
