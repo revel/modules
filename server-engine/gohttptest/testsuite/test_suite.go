@@ -22,7 +22,7 @@ import (
 	"testing"
 )
 
-// Start a new request, with a new session
+// NewTestSuite starts a new request, with a new session
 func NewTestSuite(t *testing.T) *TestSuite {
 	return NewTestSuiteEngine(revel.NewSessionCookieEngine(), t)
 }

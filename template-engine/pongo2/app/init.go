@@ -47,7 +47,7 @@ func getContext() map[string]interface{} {
 	return gls.Get("data").(map[string]interface{})
 }
 
-// return a 'revel.Template' from HAML's template.
+// Render returns a 'revel.Template' from HAML's template.
 func (tmpl PongoTemplate) Render(wr io.Writer, arg interface{}) (err error) {
 	gls.With(gls.Values(map[interface{}]interface{}{"data": arg}), func() {
 		err = tmpl.template.ExecuteWriter(p2.Context(arg.(map[string]interface{})), wr)

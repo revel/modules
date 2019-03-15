@@ -279,7 +279,7 @@ func (r *GoResponse) Get(key int) (value interface{}, err error) {
 	return
 }
 
-// Returns list of header keys
+// GetKeys returns list of header keys
 func (r *GoHeader) GetKeys() (value []string) {
 	if !r.isResponse {
 		for key := range r.Source.(*GoRequest).Original.Header {
