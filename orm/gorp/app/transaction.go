@@ -2,8 +2,8 @@ package gorp
 
 import (
 	"database/sql"
-	sq "gopkg.in/Masterminds/squirrel.v1"
-	gorpa "gopkg.in/gorp.v2"
+	sq "github.com/Masterminds/squirrel"
+	gorpa "github.com/go-gorp/gorp"
 )
 
 type (

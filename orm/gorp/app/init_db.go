@@ -7,8 +7,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
 	"github.com/revel/revel"
 	"github.com/revel/revel/logger"
-	sq "gopkg.in/Masterminds/squirrel.v1"
-	"gopkg.in/gorp.v2"
+	sq "github.com/Masterminds/squirrel"
+	"github.com/go-gorp/gorp"
 )
 
 var (
