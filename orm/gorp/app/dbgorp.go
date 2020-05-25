@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"github.com/revel/revel"
 	"github.com/revel/revel/logger"
-	sq "gopkg.in/Masterminds/squirrel.v1"
-	"gopkg.in/gorp.v2"
+	sq "github.com/Masterminds/squirrel"
+	"github.com/go-gorp/gorp"
 )
 
 // DB Gorp
