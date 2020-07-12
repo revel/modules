@@ -9,8 +9,9 @@ import (
 	"math"
 	"net/url"
 
-	"github.com/revel/revel"
 	"strings"
+
+	"github.com/revel/revel"
 )
 
 // allowMethods are HTTP methods that do NOT require a token
@@ -67,9 +68,9 @@ func CsrfFilter(c *revel.Controller, fc []revel.Filter) {
 	// If the Request method isn't in the white listed methods
 	if !allowedMethods[c.Request.Method] && !IsExempt(c) {
 		validToken := validToken(token, isSameOrigin, foundToken, c)
-		c.Log.Info("Validating route for token", "token", token,"wasfound",foundToken, "isvalid",validToken)
+		c.Log.Info("Validating route for token", "token", token, "wasfound", foundToken, "isvalid", validToken)
 		if !validToken {
-			c.Log.Warn("Invalid CSRF token", "token", token,"wasfound",foundToken)
+			c.Log.Warn("Invalid CSRF token", "token", token, "wasfound", foundToken)
 			return
 		}
 	}
@@ -77,7 +78,7 @@ func CsrfFilter(c *revel.Controller, fc []revel.Filter) {
 	fc[0](c, fc[1:])
 
 	// Only add token to ViewArgs if the request is: not AJAX, not missing referer header, and (is same origin, or is an empty referer).
-	if c.Request.GetHttpHeader("X-CSRFToken") == "" && ( 	referer.String() == "" || isSameOrigin) {
+	if c.Request.GetHttpHeader("X-CSRFToken") == "" && (referer.String() == "" || isSameOrigin) {
 		c.ViewArgs["_csrftoken"] = token
 	}
 }
@@ -152,7 +153,7 @@ func getFullRequestURL(c *revel.Controller) (requestUrl *url.URL) {
 		} else {
 			requestUrl.Scheme = "http"
 		}
-		fixedUrl := requestUrl.Scheme + "://" + c.Request.Host + c.Request.URL.RawPath
+		fixedUrl := requestUrl.Scheme + "://" + c.Request.Host + c.Request.URL.Path
 		if purl, err := url.Parse(fixedUrl); err == nil {
 			requestUrl = purl
 		}
@@ -173,7 +174,7 @@ func compareToken(requestToken, token string) bool {
 
 // Validates same origin policy
 func sameOrigin(u1, u2 *url.URL) bool {
-	return u1.Scheme == u2.Scheme && u1.Host == u2.Host
+	return u1.Scheme == u2.Scheme && u1.Hostname() == u2.Hostname()
 }
 
 // Add a function to the template functions map
