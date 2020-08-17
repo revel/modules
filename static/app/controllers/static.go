@@ -115,7 +115,7 @@ func (c Static) ServeModule(moduleName, prefix, filepath string) revel.Result {
 	return serve(c, absPath, filepath, false)
 }
 
-// ServeModule method allows modules to serve binary files. The parameters are the same
+// ServeModuleDir method allows modules to serve binary files. The parameters are the same
 // as Static.Serve with the additional module name pre-pended to the list of
 // arguments.
 func (c Static) ServeModuleDir(moduleName, prefix, filepath string) revel.Result {

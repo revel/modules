@@ -145,7 +145,7 @@ func (f *FastHTTPServer) handleAppMux(ctx *fasthttp.RequestCtx) (result bool) {
 	return
 }
 
-// ClientIP method returns client IP address from HTTP request.
+// HttpClientIP method returns client IP address from HTTP request.
 //
 // Note: Set property "app.behind.proxy" to true only if Revel is running
 // behind proxy like nginx, haproxy, apache, etc. Otherwise
@@ -193,7 +193,7 @@ func (f *FastHTTPServer) handleMux(ctx *fasthttp.RequestCtx) {
 	f.ServerInit.Callback(context)
 }
 
-// Handle an event generated from Revel
+// Event handles an event generated from Revel
 func (f *FastHTTPServer) Event(event revel.Event, args interface{}) revel.EventResponse {
 
 	switch event {
@@ -214,17 +214,17 @@ func (f *FastHTTPServer) Event(event revel.Event, args interface{}) revel.EventR
 	return 0
 }
 
-// Return the engine name
+// Name returns the engine name
 func (f *FastHTTPServer) Name() string {
 	return "fasthttp"
 }
 
-// Return the engine
+// Engine returns the engine
 func (f *FastHTTPServer) Engine() interface{} {
 	return f
 }
 
-// Returns stats for the engine
+// Stats returns stats for the engine
 func (g *FastHTTPServer) Stats() map[string]interface{} {
 	return map[string]interface{}{
 		"FastHTTP Engine Context": fastHttpContextStack.String(),
@@ -317,7 +317,7 @@ func (c *FastHttpContext) Destroy() {
 	c.Request.Destroy()
 }
 
-// Gets the value from the request
+// Get gets the value from the request
 func (r *FastHttpRequest) Get(key int) (value interface{}, err error) {
 	switch key {
 	case revel.HTTP_SERVER_HEADER:
@@ -357,7 +357,7 @@ func (r *FastHttpRequest) Set(key int, value interface{}) bool {
 	return false
 }
 
-// Returns the query string
+// GetQuery returns the query string
 func (r *FastHttpRequest) GetQuery() url.Values {
 	if !r.toQuery {
 		// Attempt to convert to query
@@ -370,7 +370,7 @@ func (r *FastHttpRequest) GetQuery() url.Values {
 	return r.query
 }
 
-// Returns the form
+// GetForm returns the form
 func (r *FastHttpRequest) GetForm() (url.Values, error) {
 	if !r.FormParsed {
 		r.form = url.Values{}
@@ -382,7 +382,7 @@ func (r *FastHttpRequest) GetForm() (url.Values, error) {
 	return r.form, nil
 }
 
-// Returns the form
+// GetMultipartForm returns the form
 func (r *FastHttpRequest) GetMultipartForm() (revel.ServerMultipartForm, error) {
 	if !r.MultiFormParsed {
 		// TODO Limit size r.Engine.MaxMultipartSize
@@ -398,12 +398,12 @@ func (r *FastHttpRequest) GetMultipartForm() (revel.ServerMultipartForm, error) 
 	return r.ParsedForm, nil
 }
 
-// Returns the request header
+// GetHeader returns the request header
 func (r *FastHttpRequest) GetHeader() revel.ServerHeader {
 	return r.header
 }
 
-// Returns the raw request
+// GetRaw returns the raw request
 func (r *FastHttpRequest) GetRaw() interface{} {
 	return r.Original
 }
@@ -424,7 +424,7 @@ func (r *FastHttpRequest) Destroy() {
 
 }
 
-// gets the key from the response
+// Get gets the key from the response
 func (r *FastHttpResponse) Get(key int) (value interface{}, err error) {
 	switch key {
 	case revel.HTTP_SERVER_HEADER:
@@ -452,22 +452,22 @@ func (r *FastHttpResponse) Set(key int, value interface{}) (set bool) {
 	return
 }
 
-// Return the response writer
+// GetWriter returns the response writer
 func (r *FastHttpResponse) GetWriter() io.Writer {
 	return r.Writer
 }
 
-// Return the header
+// Header returns the header
 func (r *FastHttpResponse) Header() revel.ServerHeader {
 	return r.header
 }
 
-// Returns the raw response
+// GetRaw returns the raw response
 func (r *FastHttpResponse) GetRaw() interface{} {
 	return r.Original
 }
 
-// Writes a stream to the response
+// WriteStream writes a stream to the response
 func (r *FastHttpResponse) WriteStream(name string, contentlen int64, modtime time.Time, reader io.Reader) error {
 
 	// do a simple io.Copy, we do it directly into the writer which may be configured to be a compressed
@@ -529,7 +529,7 @@ func (r *FastHttpHeader) SetCookie(cookie string) {
 	}
 }
 
-// Returns a cookie
+// GetCookie returns a cookie
 func (r *FastHttpHeader) GetCookie(key string) (value revel.ServerCookie, err error) {
 	if !r.isResponse {
 		var cookie []byte
@@ -550,7 +550,7 @@ func (r *FastHttpHeader) Set(key string, value string) {
 	}
 }
 
-// Adds a header key
+// Add adds a header key
 func (r *FastHttpHeader) Add(key string, value string) {
 	if r.isResponse {
 		r.Source.(*FastHttpResponse).Original.Response.Header.Add(key, value)
@@ -564,7 +564,7 @@ func (r *FastHttpHeader) Del(key string) {
 	}
 }
 
-// Returns the header keys
+// GetKeys returns the header keys
 func (r *FastHttpHeader) GetKeys() (value []string) {
 	addValue := func(k, v []byte) {
 		found := false
@@ -589,7 +589,7 @@ func (r *FastHttpHeader) GetKeys() (value []string) {
 	return
 }
 
-// returns the header value
+// Get returns the header value
 func (r *FastHttpHeader) Get(key string) (value []string) {
 	if !r.isResponse {
 		value = strings.Split(string(r.Source.(*FastHttpRequest).Original.Request.Header.Peek(key)), ",")
@@ -606,22 +606,22 @@ func (r *FastHttpHeader) SetStatus(statusCode int) {
 	}
 }
 
-// Returns the cookie value
+// GetValue returns the cookie value
 func (r FastHttpCookie) GetValue() string {
 	return string(r)
 }
 
-// Returns the files for a form
+// GetFiles returns the files for a form
 func (f *FastHttpMultipartForm) GetFiles() map[string][]*multipart.FileHeader {
 	return f.Form.File
 }
 
-// Returns the values for a form
+// GetValues returns the values for a form
 func (f *FastHttpMultipartForm) GetValues() url.Values {
 	return url.Values(f.Form.Value)
 }
 
-// Remove all the vlaues from a form
+// RemoveAll removes all the vlaues from a form
 func (f *FastHttpMultipartForm) RemoveAll() error {
 	return f.Form.RemoveAll()
 }
