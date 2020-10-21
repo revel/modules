@@ -5,11 +5,12 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"net/http"
+	"strings"
+
 	"github.com/revel/cron"
 	"github.com/revel/modules/jobs/app/jobs"
 	"github.com/revel/revel"
-	"net/http"
-	"strings"
 )
 
 type Jobs struct {
@@ -19,11 +20,11 @@ type Jobs struct {
 func (c *Jobs) Status() revel.Result {
 	remoteAddress := c.Request.RemoteAddr
 	if revel.Config.BoolDefault("jobs.auth", false) {
-		user, found_user := revel.Config.String("jobs.auth.user")
-		pass, found_pass := revel.Config.String("jobs.auth.pass")
+		user, foundUser := revel.Config.String("jobs.auth.user")
+		pass, foundPass := revel.Config.String("jobs.auth.pass")
 
 		// Verify that a username and password are given in the config file
-		if !found_pass || !found_user {
+		if !foundPass || !foundUser {
 			return c.unauthorized()
 		}
 
@@ -43,10 +44,10 @@ func (c *Jobs) Status() revel.Result {
 		str := strings.Split(string(decoded), ":")
 
 		// If SHA256 is enabled, hash received password
-		is_sha256 := revel.Config.BoolDefault("jobs.auth.sha256", false)
-		if is_sha256 {
+		isSha256 := revel.Config.BoolDefault("jobs.auth.sha256", false)
+		if isSha256 {
 			hash := sha256.Sum256([]byte(str[1]))
-			str[1] = string(hex.EncodeToString(hash[:]))
+			str[1] = hex.EncodeToString(hash[:])
 			pass = strings.ToLower(pass)
 		}
 
@@ -55,7 +56,6 @@ func (c *Jobs) Status() revel.Result {
 			c.Log.Warn("Attempted login to /@jobs with invalid credentials")
 			return c.unauthorized()
 		}
-
 	} else {
 		if revel.Config.BoolDefault("jobs.acceptproxyaddress", false) {
 			if proxiedAddress := c.Request.GetHttpHeader("X-Forwarded-For"); proxiedAddress != "" {

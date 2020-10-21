@@ -27,21 +27,21 @@ func (node *tagCheckboxNode) Execute(ctx *p2.ExecutionContext, writer p2.Templat
 	if err != nil {
 		return err
 	}
-	val_str := val.String()
+	valStr := val.String()
 
 	checked := ""
-	if field.Flash() == val_str {
+	if field.Flash() == valStr {
 		checked = " checked"
 	}
 	fmt.Fprintf(writer, `<input type="checkbox" name="%s" value="%s"%s>`,
-		html.EscapeString(field.Name), html.EscapeString(val_str), checked)
+		html.EscapeString(field.Name), html.EscapeString(valStr), checked)
 	return nil
 }
 
 // tagURLForParser implements a {% urlfor %} tag.
 //
 // urlfor takes one argument for the controller, as well as any number of key/value pairs for additional URL data.
-// Example: {% urlfor "UserController.View" ":slug" "oal" %}
+// Example: {% urlfor "UserController.View" ":slug" "oal" %}.
 func tagCheckboxParser(doc *p2.Parser, start *p2.Token, arguments *p2.Parser) (p2.INodeTag, *p2.Error) {
 	var field string
 	typeToken := arguments.MatchType(p2.TokenIdentifier)
@@ -58,9 +58,10 @@ func tagCheckboxParser(doc *p2.Parser, start *p2.Token, arguments *p2.Parser) (p
 		return nil, err
 	}
 	return &INodeImplied{Exec: func(ctx *p2.ExecutionContext, w p2.TemplateWriter) *p2.Error {
-
-		v := tagCheckboxNode{Pongo2BaseTag: Pongo2BaseTag{field: field},
-			value: expr}
+		v := tagCheckboxNode{
+			Pongo2BaseTag: Pongo2BaseTag{field: field},
+			value:         expr,
+		}
 		return v.Execute(ctx, w)
 	}}, nil
 }

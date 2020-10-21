@@ -29,22 +29,22 @@ func (node *tagOptionNode) Execute(ctx *p2.ExecutionContext, writer p2.TemplateW
 	if err != nil {
 		return err
 	}
-	val_str := val.String()
+	valStr := val.String()
 
 	selected := ""
-	if field.Flash() == val_str || (field.Flash() == "" && field.Value() == val_str) {
+	if field.Flash() == valStr || (field.Flash() == "" && field.Value() == valStr) {
 		selected = " selected"
 	}
 
 	fmt.Fprintf(writer, `<option value="%s"%s>%s</option>`,
-		html.EscapeString(val_str), selected, html.EscapeString(node.label))
+		html.EscapeString(valStr), selected, html.EscapeString(node.label))
 	return nil
 }
 
 // tagURLForParser implements a {% urlfor %} tag.
 //
 // urlfor takes one argument for the controller, as well as any number of key/value pairs for additional URL data.
-// Example: {% urlfor "UserController.View" ":slug" "oal" %}
+// Example: {% urlfor "UserController.View" ":slug" "oal" %}.
 func tagOptionParser(doc *p2.Parser, start *p2.Token, arguments *p2.Parser) (p2.INodeTag, *p2.Error) {
 	var field string
 	typeToken := arguments.MatchType(p2.TokenIdentifier)
@@ -63,15 +63,15 @@ func tagOptionParser(doc *p2.Parser, start *p2.Token, arguments *p2.Parser) (p2.
 
 	var v *tagOptionNode
 	if sToken := arguments.MatchType(p2.TokenString); nil != sToken {
-		v = &tagOptionNode{Pongo2BaseTag: Pongo2BaseTag{field: field},
-			value: expr,
-			label: sToken.Val}
+		v = &tagOptionNode{
+			Pongo2BaseTag: Pongo2BaseTag{field: field},
+			value:         expr,
+			label:         sToken.Val,
+		}
 	} else {
 		return nil, arguments.Error("Expected an string.", nil)
 	}
-	return &INodeImplied{Exec: func(ctx *p2.ExecutionContext, w p2.TemplateWriter) *p2.Error {
-		return v.Execute(ctx, w)
-	}}, nil
+	return &INodeImplied{Exec: v.Execute}, nil
 }
 
 func init() {

@@ -2,17 +2,24 @@ package gorp
 
 import (
 	"fmt"
-	_ "github.com/jinzhu/gorm/dialects/mysql"    // mysql package
-	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres package
-	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
-	"github.com/revel/revel"
-	"github.com/revel/revel/logger"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/go-gorp/gorp"
+
+	// mysql package.
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+
+	// postgres package.
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+
+	// mysql package.
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/revel/revel"
+	"github.com/revel/revel/logger"
 )
 
 var (
-	// The database map to use to populate data
+	// The database map to use to populate data.
 	Db           = &DbGorp{}
 	moduleLogger logger.MultiLogger
 )
@@ -23,12 +30,13 @@ func init() {
 		moduleLogger.Debug("Assigned Logger")
 	})
 }
-func (dbResult *DbGorp) InitDb(open bool) (err error) {
-	dbInfo := dbResult.Info
+
+func (dbGorp *DbGorp) InitDb(open bool) (err error) {
+	dbInfo := dbGorp.Info
 
 	switch dbInfo.DbDriver {
 	default:
-		dbResult.SqlStatementBuilder = sq.StatementBuilder.PlaceholderFormat(sq.Question)
+		dbGorp.SqlStatementBuilder = sq.StatementBuilder.PlaceholderFormat(sq.Question)
 		dbInfo.Dialect = gorp.SqliteDialect{}
 		if len(dbInfo.DbConnection) == 0 {
 			dbInfo.DbConnection = fmt.Sprintf(dbInfo.DbHost)
@@ -38,13 +46,13 @@ func (dbResult *DbGorp) InitDb(open bool) (err error) {
 	case "ql-mem":
 		fallthrough
 	case "postgres":
-		dbResult.SqlStatementBuilder = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+		dbGorp.SqlStatementBuilder = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 		dbInfo.Dialect = gorp.PostgresDialect{}
 		if len(dbInfo.DbConnection) == 0 {
 			dbInfo.DbConnection = fmt.Sprintf("host=%s port=8500 user=%s dbname=%s sslmode=disable password=%s", dbInfo.DbHost, dbInfo.DbUser, dbInfo.DbName, dbInfo.DbPassword)
 		}
 	case "mysql":
-		dbResult.SqlStatementBuilder = sq.StatementBuilder.PlaceholderFormat(sq.Question)
+		dbGorp.SqlStatementBuilder = sq.StatementBuilder.PlaceholderFormat(sq.Question)
 		dbInfo.Dialect = gorp.MySQLDialect{}
 		if len(dbInfo.DbConnection) == 0 {
 			dbInfo.DbConnection = fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", dbInfo.DbUser, dbInfo.DbPassword, dbInfo.DbHost, dbInfo.DbName)
@@ -52,13 +60,13 @@ func (dbResult *DbGorp) InitDb(open bool) (err error) {
 	}
 
 	if open {
-		err = dbResult.OpenDb()
+		err = dbGorp.OpenDb()
 	}
 	return
 }
 
-// Initialize the database from revel.Config
-func InitDb(dbResult *DbGorp) error {
+// Initialize the database from revel.Config.
+func InitDb(dbGorp *DbGorp) error {
 	params := DbInfo{}
 	params.DbDriver = revel.Config.StringDefault("db.driver", "sqlite3")
 	params.DbHost = revel.Config.StringDefault("db.host", "localhost")
@@ -70,7 +78,7 @@ func InitDb(dbResult *DbGorp) error {
 	params.DbName = revel.Config.StringDefault("db.name", "default")
 	params.DbConnection = revel.Config.StringDefault("db.connection", "")
 	params.DbSchema = revel.Config.StringDefault("db.schema", "")
-	dbResult.Info = &params
+	dbGorp.Info = &params
 
-	return dbResult.InitDb(true)
+	return dbGorp.InitDb(true)
 }

@@ -1,4 +1,5 @@
-/*	A basic user authentication module for Revel
+/*
+A basic user authentication module for Revel
 
  list of concerns:
 - Separating out the interface and driver

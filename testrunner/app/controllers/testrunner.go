@@ -76,7 +76,7 @@ func (c TestRunner) Index() revel.Result {
 	return c.Render(testSuites)
 }
 
-// Suite method allows user to navigate to individual Test Suite and their tests
+// Suite method allows user to navigate to individual Test Suite and their tests.
 func (c TestRunner) Suite(suite string) revel.Result {
 	var foundTestSuites []TestSuiteDesc
 	for _, testSuite := range testSuites {
@@ -127,7 +127,9 @@ func (c TestRunner) Run(suite, test string) revel.Result {
 					"response": res,
 					"postfix":  suite + "_" + test,
 				})
+
 				result.ErrorSummary = errorSummary(panicErr)
+				//nolint:gosec
 				result.ErrorHTML = template.HTML(buffer.String())
 			}
 		}()
@@ -187,7 +189,7 @@ func describeSuite(testSuite interface{}) TestSuiteDesc {
 		m := t.Method(i)
 		mt := m.Type
 
-		// Make sure the test method meets the criterias:
+		// Make sure the test method meets the criteria:
 		// - method of testSuite without input parameters;
 		// - nothing is returned;
 		// - has "Test" prefix;
@@ -216,7 +218,7 @@ func errorSummary(err *revel.Error) (message string) {
 	expectedPrefix := "(expected)"
 	actualPrefix := "(actual)"
 	errDesc := err.Description
-	//strip the actual/expected stuff to provide more condensed display.
+	// strip the actual/expected stuff to provide more condensed display.
 	if strings.Index(errDesc, expectedPrefix) == 0 {
 		errDesc = errDesc[len(expectedPrefix):]
 	}
@@ -294,8 +296,8 @@ func formatResponse(t testing.TestSuite) map[string]string {
 
 	// Remove extra new line symbols so they do not take too much space on a result page.
 	// Allow no more than 1 line break at a time.
-	body := strings.Replace(string(t.ResponseBody), "\n\n", "\n", -1)
-	body = strings.Replace(body, "\r\n\r\n", "\r\n", -1)
+	body := strings.ReplaceAll(string(t.ResponseBody), "\n\n", "\n")
+	body = strings.ReplaceAll(body, "\r\n\r\n", "\r\n")
 
 	return map[string]string{
 		"Headers": string(respBytes),
@@ -303,7 +305,7 @@ func formatResponse(t testing.TestSuite) map[string]string {
 	}
 }
 
-//sortbySuiteName sorts the testsuites by name.
+// sortbySuiteName sorts the testsuites by name.
 type sortBySuiteName []interface{}
 
 func (a sortBySuiteName) Len() int      { return len(a) }

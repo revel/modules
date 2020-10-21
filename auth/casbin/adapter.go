@@ -6,7 +6,7 @@ import (
 	"github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
 	"github.com/jinzhu/gorm"
-	"github.com/revel/modules/orm/gorm/app"
+	gormdb "github.com/revel/modules/orm/gorm/app"
 )
 
 type Line struct {
@@ -21,9 +21,7 @@ type Line struct {
 
 // Adapter represents the Gorm adapter for policy storage.
 type Adapter struct {
-	driverName     string
-	dataSourceName string
-	db             *gorm.DB
+	db *gorm.DB
 }
 
 // NewAdapter is the constructor for Adapter.

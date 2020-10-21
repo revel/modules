@@ -4,7 +4,7 @@
 //
 // 1. Protection against job panics.  (They print to ERROR instead of take down the process)
 //
-// 2. (Optional) Limit on the number of jobs that may run simulatenously, to
+// 2. (Optional) Limit on the number of jobs that may run simultaneously, to
 // limit resource consumption.
 //
 // 3. (Optional) Protection against multiple instances of a single job running

@@ -1,21 +1,21 @@
 package casbinauthz
 
 import (
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/casbin/casbin"
-	"github.com/casbin/casbin/util"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/revel/modules/orm/gorm/app"
+	gormdb "github.com/revel/modules/orm/gorm/app"
 	"github.com/revel/revel"
 )
 
-var adapter = NewAdapter(DefaultDbParams())
-var enforcer = casbin.NewEnforcer("authz_model.conf", adapter)
-var casbinModule = NewCasbinModule(enforcer)
+var (
+	adapter      = NewAdapter(DefaultDbParams())
+	enforcer     = casbin.NewEnforcer("authz_model.conf", adapter)
+	casbinModule = NewCasbinModule(enforcer)
+)
 
 var testFilters = []revel.Filter{
 	casbinModule.AuthzFilter,
@@ -50,16 +50,8 @@ func testRequest(t *testing.T, user string, path string, method string, code int
 	}
 }
 
-func testGetPolicy(t *testing.T, e *casbin.Enforcer, res [][]string) {
-	myRes := e.GetPolicy()
-	log.Print("Policy: ", myRes)
-
-	if !util.Array2DEquals(res, myRes) {
-		t.Error("Policy: ", myRes, ", supposed to be ", res)
-	}
-}
-
 func initPolicy(t *testing.T) {
+	t.Helper()
 	// Because the DB is empty at first,
 	// so we need to load the policy from the file adapter (.CSV) first.
 	e := casbin.NewEnforcer("authz_model.conf", "authz_policy.csv")

@@ -15,6 +15,7 @@ type PongoTemplate struct {
 	engine   *PongoEngine
 	*revel.TemplateView
 }
+
 type Pongo2BaseTag struct {
 	field string
 }
@@ -38,11 +39,12 @@ type INodeImplied struct {
 
 func (i *INodeImplied) Execute(ctx *p2.ExecutionContext, w p2.TemplateWriter) *p2.Error {
 	return i.Exec(ctx, w)
-
 }
+
 func (tmpl PongoTemplate) Name() string {
 	return tmpl.TemplateName
 }
+
 func getContext() map[string]interface{} {
 	return gls.Get("data").(map[string]interface{})
 }
@@ -69,7 +71,7 @@ func (tmpl PongoTemplate) Render(wr io.Writer, arg interface{}) (err error) {
 	return err
 }
 
-// There is only a single instance of the PongoEngine initialized
+// There is only a single instance of the PongoEngine initialized.
 type PongoEngine struct {
 	loader                *revel.TemplateLoader
 	templateSetBybasePath map[string]*p2.TemplateSet
@@ -77,15 +79,15 @@ type PongoEngine struct {
 	CaseInsensitive       bool
 }
 
-func (i *PongoEngine) ConvertPath(path string) string {
-	if i.CaseInsensitive {
+func (engine *PongoEngine) ConvertPath(path string) string {
+	if engine.CaseInsensitive {
 		return strings.ToLower(path)
 	}
 	return path
 }
 
-func (i *PongoEngine) Handles(templateView *revel.TemplateView) bool {
-	return revel.EngineHandles(i, templateView)
+func (engine *PongoEngine) Handles(templateView *revel.TemplateView) bool {
+	return revel.EngineHandles(engine, templateView)
 }
 
 func (engine *PongoEngine) ParseAndAdd(baseTemplate *revel.TemplateView) error {
@@ -110,9 +112,11 @@ func (engine *PongoEngine) ParseAndAdd(baseTemplate *revel.TemplateView) error {
 	engine.templates[baseTemplate.TemplateName] = &PongoTemplate{
 		template:     tpl,
 		engine:       engine,
-		TemplateView: baseTemplate}
+		TemplateView: baseTemplate,
+	}
 	return nil
 }
+
 func (engine *PongoEngine) Name() string {
 	return "pongo2"
 }
@@ -132,6 +136,7 @@ func (engine *PongoEngine) Lookup(templateName string) revel.Template {
 	}
 	return tpl
 }
+
 func (engine *PongoEngine) Event(action revel.Event, i interface{}) {
 	if action == revel.TEMPLATE_REFRESH_REQUESTED {
 		// At this point all the templates have been passed into the

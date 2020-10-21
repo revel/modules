@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/revel/modules/auth/basic"
+	auth "github.com/revel/modules/auth/basic"
 	"github.com/revel/modules/auth/basic/driver/secret"
 )
 
@@ -25,29 +25,29 @@ func NewUser(email, pass string) *User {
 	return u
 }
 
-func (self *User) UserId() string {
-	return self.email
+func (u *User) UserId() string {
+	return u.email
 }
 
-func (self *User) Secret() string {
-	return self.password
+func (u *User) Secret() string {
+	return u.password
 }
 
-func (self *User) HashedSecret() string {
-	return self.hashpass
+func (u *User) HashedSecret() string {
+	return u.hashpass
 }
 
-func (self *User) SetHashedSecret(hpass string) {
-	self.hashpass = hpass
+func (u *User) SetHashedSecret(hpass string) {
+	u.hashpass = hpass
 }
 
-// func (self *User) Load() string
+// func (u *User) Load() string
 
 type TestStore struct {
 	data map[string]string
 }
 
-func (self *TestStore) Save(user interface{}) error {
+func (ts *TestStore) Save(user interface{}) error {
 	u, ok := user.(*User)
 	if !ok {
 		return errors.New("TestStore.Save() expected arg of type User")
@@ -57,17 +57,18 @@ func (self *TestStore) Save(user interface{}) error {
 	if err != nil {
 		return err
 	}
-	self.data[u.UserId()] = hPass
+	ts.data[u.UserId()] = hPass
 
 	return nil
 }
-func (self *TestStore) Load(user interface{}) error {
+
+func (ts *TestStore) Load(user interface{}) error {
 	u, ok := user.(*User)
 	if !ok {
 		return errors.New("TestStore.Load() expected arg of type User")
 	}
 
-	hpass, ok := self.data[u.UserId()]
+	hpass, ok := ts.data[u.UserId()]
 	if !ok {
 		return errors.New("Record Not Found")
 	}

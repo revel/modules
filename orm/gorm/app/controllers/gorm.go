@@ -9,7 +9,7 @@ import (
 	"github.com/revel/revel"
 )
 
-// Controller is a Revel controller with a pointer to the opened database
+// Controller is a Revel controller with a pointer to the opened database.
 type Controller struct {
 	*revel.Controller
 	DB *gorm.DB
@@ -20,15 +20,14 @@ func (c *Controller) setDB() revel.Result {
 	return nil
 }
 
-// TxnController is a Revel controller with database transaction support (begin, commit and rollback)
+// TxnController is a Revel controller with database transaction support (begin, commit and rollback).
 type TxnController struct {
 	*revel.Controller
 	Txn *gorm.DB
 }
 
-// Begin begins a DB transaction
+// Begin begins a DB transaction.
 func (c *TxnController) Begin() revel.Result {
-
 	txn := gormdb.DB.Begin()
 	if txn.Error != nil {
 		c.Log.Panic("Transaction begine error", "error", txn.Error)
@@ -38,7 +37,7 @@ func (c *TxnController) Begin() revel.Result {
 	return nil
 }
 
-// Commit commits the database transation
+// Commit commits the database transition.
 func (c *TxnController) Commit() revel.Result {
 	if c.Txn == nil {
 		return nil
@@ -54,7 +53,7 @@ func (c *TxnController) Commit() revel.Result {
 	return nil
 }
 
-// Rollback rolls back the transaction (eg. after a panic)
+// Rollback rolls back the transaction (eg. after a panic).
 func (c *TxnController) Rollback() revel.Result {
 	if c.Txn == nil {
 		return nil

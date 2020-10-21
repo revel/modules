@@ -1,12 +1,9 @@
 package testsuite
 
-// The TestSuite container is a container to relay information between the server and the caller
+// The TestSuite container is a container to relay information between the server and the caller.
 import (
 	"bytes"
 	"fmt"
-	"github.com/revel/revel"
-	"github.com/revel/revel/session"
-	"golang.org/x/net/websocket"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -20,28 +17,32 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/revel/revel"
+	"github.com/revel/revel/session"
+	"golang.org/x/net/websocket"
 )
 
-// Start a new request, with a new session
+// Start a new request, with a new session.
 func NewTestSuite(t *testing.T) *TestSuite {
 	return NewTestSuiteEngine(revel.NewSessionCookieEngine(), t)
 }
 
-// Define a new test suite with a custom session engine
+// Define a new test suite with a custom session engine.
 func NewTestSuiteEngine(engine revel.SessionEngine, t *testing.T) *TestSuite {
 	jar, _ := cookiejar.New(nil)
 	ts := &TestSuite{
-		Client:        &http.Client{Jar: jar},
-		Session:       session.NewSession(),
-		SessionEngine: engine,
-		T:             t,
-		ResponseChannel:make(chan bool, 1),
+		Client:          &http.Client{Jar: jar},
+		Session:         session.NewSession(),
+		SessionEngine:   engine,
+		T:               t,
+		ResponseChannel: make(chan bool, 1),
 	}
 
 	return ts
 }
 
-// TestSuite container
+// TestSuite container.
 type TestSuite struct {
 	Response        *httptest.ResponseRecorder // The response recorder
 	ResponseChannel chan bool                  // The response channel
@@ -53,7 +54,7 @@ type TestSuite struct {
 }
 
 // NewTestRequest returns an initialized *TestRequest. It is used for extending
-// testsuite package making it possibe to define own methods. Example:
+// testsuite package making it possible to define own methods. Example:
 //	type MyTestSuite struct {
 //		testing.TestSuite
 //	}
@@ -70,7 +71,7 @@ func (t *TestSuite) NewTestRequest(req *http.Request) *TestRequest {
 	}
 }
 
-// Host returns the address and port of the server, e.g. "127.0.0.1:8557"
+// Host returns the address and port of the server, e.g. "127.0.0.1:8557".
 func (t *TestSuite) Host() string {
 	if revel.ServerEngineInit.Address[0] == ':' {
 		return "127.0.0.1" + revel.ServerEngineInit.Address
@@ -259,7 +260,7 @@ func (r *TestRequest) Send() *TestRequest {
 
 // MakeRequest issues any request and read the response. If successful, the
 // caller may examine the Response and ResponseBody properties. You will need to
-// manage session / cookie data manually
+// manage session / cookie data manually.
 func (r *TestRequest) MakeRequest() *TestRequest {
 	revel.CurrentEngine.(*GoHttpServer).TestChannel <- r
 	<-r.testSuite.ResponseChannel
@@ -283,7 +284,7 @@ func (r *TestRequest) MakeRequest() *TestRequest {
 	return r
 }
 
-// WebSocket creates a websocket connection to the given path and returns it
+// WebSocket creates a websocket connection to the given path and returns it.
 func (t *TestSuite) WebSocket(path string) *websocket.Conn {
 	t.Assertf(true, "Web Socket Not implemented at this time")
 	origin := t.BaseUrl() + "/"
@@ -305,7 +306,7 @@ func (t *TestSuite) AssertNotFound() {
 
 func (t *TestSuite) AssertStatus(status int) {
 	if t.Response.Code != status {
-		panic(fmt.Errorf("Status: (expected) %d != %d (actual)", status, t.Response.Code))
+		panic(fmt.Errorf("status: (expected) %d != %d (actual)", status, t.Response.Code))
 	}
 }
 
@@ -314,9 +315,9 @@ func (t *TestSuite) AssertContentType(contentType string) {
 }
 
 func (t *TestSuite) AssertHeader(name, value string) {
-	actual := t.Response.HeaderMap.Get(name)
+	actual := t.Response.Result().Header.Get(name)
 	if actual != value {
-		panic(fmt.Errorf("Header %s: (expected) %s != %s (actual)", name, value, actual))
+		panic(fmt.Errorf("header %s: (expected) %s != %s (actual)", name, value, actual))
 	}
 }
 
@@ -345,14 +346,14 @@ func (t *TestSuite) Assertf(exp bool, formatStr string, args ...interface{}) {
 // AssertContains asserts that the response contains the given string.
 func (t *TestSuite) AssertContains(s string) {
 	if !bytes.Contains(t.Response.Body.Bytes(), []byte(s)) {
-		panic(fmt.Errorf("Assertion failed. Expected response to contain %s", s))
+		panic(fmt.Errorf("assertion failed. Expected response to contain %s", s))
 	}
 }
 
 // AssertNotContains asserts that the response does not contain the given string.
 func (t *TestSuite) AssertNotContains(s string) {
 	if bytes.Contains(t.Response.Body.Bytes(), []byte(s)) {
-		panic(fmt.Errorf("Assertion failed. Expected response not to contain %s", s))
+		panic(fmt.Errorf("assertion failed. Expected response not to contain %s", s))
 	}
 }
 
@@ -361,7 +362,7 @@ func (t *TestSuite) AssertContainsRegex(regex string) {
 	r := regexp.MustCompile(regex)
 
 	if !r.Match(t.Response.Body.Bytes()) {
-		panic(fmt.Errorf("Assertion failed. Expected response to match regexp %s", regex))
+		panic(fmt.Errorf("assertion failed. Expected response to match regexp %s", regex))
 	}
 }
 

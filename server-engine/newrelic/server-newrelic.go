@@ -1,7 +1,7 @@
 package revelnewrelic
 
 import (
-	"github.com/newrelic/go-agent"
+	newrelic "github.com/newrelic/go-agent"
 	"github.com/revel/revel"
 )
 
@@ -11,9 +11,7 @@ type ServerNewRelic struct {
 	revel.GoHttpServer
 }
 
-var (
-	serverLog = revel.AppLog
-)
+var serverLog = revel.AppLog
 
 func init() {
 	revel.RegisterServerEngine("newrelic", func() revel.ServerEngine {
@@ -27,14 +25,13 @@ func init() {
 	revel.RegisterModuleInit(func(m *revel.Module) {
 		serverLog = m.Log
 	})
-
-}
-func (g *ServerNewRelic) Init(init *revel.EngineInit) {
-	g.GoHttpServer.Init(init)
 }
 
-func (nr *ServerNewRelic) Event(event revel.Event, args interface{}) (revel.EventResponse) {
+func (nr *ServerNewRelic) Init(init *revel.EngineInit) {
+	nr.GoHttpServer.Init(init)
+}
 
+func (nr *ServerNewRelic) Event(event revel.Event, args interface{}) revel.EventResponse {
 	switch event {
 	case revel.ENGINE_BEFORE_INITIALIZED:
 		nr.NewRelicConfig.AppName = revel.Config.StringDefault("app.name", "Uknown App")
@@ -62,20 +59,22 @@ func (nr *ServerNewRelic) Event(event revel.Event, args interface{}) (revel.Even
 			serverLog.Panic("Failed to start NewRelic:", "error", err)
 		}
 		nr.NewRelicApp = app
-
+	default:
 	}
 
 	return nr.GoHttpServer.Event(event, args)
 }
+
 func (nr *ServerNewRelic) Name() string {
 	return "newrelic"
 }
+
 func (nr *ServerNewRelic) Engine() interface{} {
 	return nr
 }
 
 // This is a simplistic example of setting up a filter to record all events for the
-// webserver as transactions
+// webserver as transactions.
 func NewRelicFilter(c *revel.Controller, fc []revel.Filter) {
 	if nr, ok := revel.CurrentEngine.Engine().(*ServerNewRelic); ok {
 		if nr.NewRelicApp != nil {

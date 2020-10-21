@@ -19,14 +19,14 @@ import (
 	"github.com/revel/revel"
 )
 
-// Database connection variables
+// Database connection variables.
 var (
 	Db     *sql.DB
 	Driver string
 	Spec   string
 )
 
-// Init method used to initialize DB module on `OnAppStart`
+// Init method used to initialize DB module on `OnAppStart`.
 func Init() {
 	// Read configuration.
 	var found bool
@@ -52,13 +52,13 @@ func Init() {
 	})
 }
 
-// Transactional definition for database transaction
+// Transactional definition for database transaction.
 type Transactional struct {
 	*revel.Controller
 	Txn *sql.Tx
 }
 
-// Begin a transaction
+// Begin a transaction.
 func (c *Transactional) Begin() revel.Result {
 	txn, err := Db.Begin()
 	if err != nil {

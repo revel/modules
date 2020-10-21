@@ -8,7 +8,7 @@ import (
 const DefaultJobPoolSize = 10
 
 var (
-	// Singleton instance of the underlying job scheduler.
+	// MainCron is the singleton instance of the underlying job scheduler.
 	MainCron *cron.Cron
 
 	// This limits the number of jobs allowed to run concurrently.

@@ -35,7 +35,6 @@ func NewGracefulListener(ln net.Listener, maxWaitTime time.Duration) net.Listene
 
 func (ln *GracefulListener) Accept() (net.Conn, error) {
 	c, err := ln.ln.Accept()
-
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +55,6 @@ func (ln *GracefulListener) Addr() net.Addr {
 // are closed before returning.
 func (ln *GracefulListener) Close() error {
 	err := ln.ln.Close()
-
 	if err != nil {
 		return nil
 	}
@@ -78,8 +76,6 @@ func (ln *GracefulListener) waitForZeroConns() error {
 	case <-time.After(ln.maxWaitTime):
 		return fmt.Errorf("cannot complete graceful shutdown in %s", ln.maxWaitTime)
 	}
-
-	return nil
 }
 
 func (ln *GracefulListener) closeConn() {
@@ -97,7 +93,6 @@ type gracefulConn struct {
 
 func (c *gracefulConn) Close() error {
 	err := c.Conn.Close()
-
 	if err != nil {
 		return err
 	}
