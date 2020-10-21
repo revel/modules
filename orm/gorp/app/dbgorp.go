@@ -2,13 +2,14 @@ package gorp
 
 import (
 	"database/sql"
-	"github.com/revel/revel"
-	"github.com/revel/revel/logger"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/go-gorp/gorp"
+	"github.com/revel/revel"
+	"github.com/revel/revel/logger"
 )
 
-// DB Gorp
+// DB Gorp.
 type DbGorp struct {
 	Map *gorp.DbMap
 	// The Sql statement builder to use to build select statements
@@ -29,6 +30,7 @@ type DbInfo struct {
 	DbConnection string
 	Dialect      gorp.Dialect
 }
+
 type (
 	DbGeneric interface {
 		Select(i interface{}, query string, args ...interface{}) ([]interface{}, error)
@@ -57,7 +59,7 @@ type (
 	}
 )
 
-// OpenDb database
+// OpenDb database.
 func (dbGorp *DbGorp) OpenDb() (err error) {
 	db, err := sql.Open(dbGorp.Info.DbDriver, dbGorp.Info.DbConnection)
 	if err != nil {
@@ -77,7 +79,7 @@ func (dbGorp *DbGorp) OpenDb() (err error) {
 	return dbGorp.dbInit()
 }
 
-// Create a new database connection and open it from this one
+// Create a new database connection and open it from this one.
 func (dbGorp *DbGorp) CloneDb(open bool) (newDb *DbGorp, err error) {
 	dbInfo := *dbGorp.Info
 	newDb = &DbGorp{Info: &dbInfo}
@@ -87,7 +89,7 @@ func (dbGorp *DbGorp) CloneDb(open bool) (newDb *DbGorp, err error) {
 	return
 }
 
-// Close the database connection
+// Close the database connection.
 func (dbGorp *DbGorp) Begin() (txn *Transaction, err error) {
 	tx, err := dbGorp.Map.Begin()
 	if err != nil {
@@ -97,7 +99,7 @@ func (dbGorp *DbGorp) Begin() (txn *Transaction, err error) {
 	return
 }
 
-// Close the database connection
+// Close the database connection.
 func (dbGorp *DbGorp) Close() (err error) {
 	if dbGorp.Map.Db != nil {
 		err = dbGorp.Map.Db.Close()
@@ -105,7 +107,7 @@ func (dbGorp *DbGorp) Close() (err error) {
 	return
 }
 
-// Called to perform table registration and anything else that needs to be done on a new connection
+// Called to perform table registration and anything else that needs to be done on a new connection.
 func (dbGorp *DbGorp) dbInit() (err error) {
 	if dbGorp.dbInitFn != nil {
 		err = dbGorp.dbInitFn(dbGorp)
@@ -113,8 +115,8 @@ func (dbGorp *DbGorp) dbInit() (err error) {
 	return
 }
 
-// Used to specifiy the init function to call when database is initialized
-// Calls the init function immediately
+// Used to specify the init function to call when database is initialized
+// Calls the init function immediately.
 func (dbGorp *DbGorp) SetDbInit(dbInitFn func(dbMap *DbGorp) error) (err error) {
 	dbGorp.dbInitFn = dbInitFn
 	return dbGorp.dbInit()
@@ -153,6 +155,7 @@ func (dbGorp *DbGorp) SelectInt(builder sq.SelectBuilder) (i int64, err error) {
 	}
 	return
 }
+
 func (dbGorp *DbGorp) ExecUpdate(builder sq.UpdateBuilder) (r sql.Result, err error) {
 	query, args, err := builder.ToSql()
 	if err == nil {
@@ -160,6 +163,7 @@ func (dbGorp *DbGorp) ExecUpdate(builder sq.UpdateBuilder) (r sql.Result, err er
 	}
 	return
 }
+
 func (dbGorp *DbGorp) ExecInsert(builder sq.InsertBuilder) (r sql.Result, err error) {
 	query, args, err := builder.ToSql()
 	if err == nil {
@@ -168,9 +172,7 @@ func (dbGorp *DbGorp) ExecInsert(builder sq.InsertBuilder) (r sql.Result, err er
 	return
 }
 
-//
 // Shifted some common functions up a level
-////
 
 func (dbGorp *DbGorp) Insert(list ...interface{}) error {
 	return dbGorp.Map.Insert(list...)
@@ -179,26 +181,30 @@ func (dbGorp *DbGorp) Insert(list ...interface{}) error {
 func (dbGorp *DbGorp) Update(list ...interface{}) (int64, error) {
 	return dbGorp.Map.Update(list...)
 }
+
 func (dbGorp *DbGorp) Get(i interface{}, keys ...interface{}) (interface{}, error) {
 	return dbGorp.Map.Get(i, keys...)
 }
+
 func (dbGorp *DbGorp) Delete(i ...interface{}) (int64, error) {
 	return dbGorp.Map.Delete(i...)
 }
 
 func (dbGorp *DbGorp) TraceOn(log logger.MultiLogger) {
 	dbGorp.Map.TraceOn("", &simpleTrace{log.New("section", "gorp")})
-
 }
+
 func (dbGorp *DbGorp) TraceOff() {
-
 }
+
 func (dbGorp *DbGorp) Builder() sq.StatementBuilderType {
 	return dbGorp.SqlStatementBuilder
 }
+
 func (dbGorp *DbGorp) GetMap() DbGeneric {
 	return dbGorp.Map
 }
+
 func (dbGorp *DbGorp) Schema() (result string) {
 	if dbGorp.Info != nil {
 		result = dbGorp.Info.DbSchema

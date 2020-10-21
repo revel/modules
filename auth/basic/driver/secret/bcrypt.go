@@ -3,7 +3,7 @@ package secret
 import (
 	"errors"
 
-	"github.com/revel/modules/auth/basic"
+	auth "github.com/revel/modules/auth/basic"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -26,41 +26,41 @@ type BcryptAuth struct {
 }
 
 // Bcrypt Secret() returns the hashed version of the password.
-// It expects an argument of type string, which is the plain text password
-func (self *BcryptAuth) HashSecret(args ...interface{}) (string, error) {
+// It expects an argument of type string, which is the plain text password.
+func (ba *BcryptAuth) HashSecret(args ...interface{}) (string, error) {
 	if auth.Store == nil {
-		return "", errors.New("Auth module StorageDriver not set")
+		return "", errors.New("auth module StorageDriver not set")
 	}
 	argLen := len(args)
 	if argLen == 0 {
 		// we are getting
-		return string(self.UserContext.HashedSecret()), nil
+		return ba.UserContext.HashedSecret(), nil
 	}
 
 	if argLen == 1 {
 		// we are setting
 		password, ok := args[0].(string)
 		if !ok {
-			return "", errors.New("Wrong argument type provided, expected plaintext password as string")
+			return "", errors.New("wrong argument type provided, expected plaintext password as string")
 		}
 		hPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if err != nil {
 			return "", err
 		}
 
-		self.UserContext.SetHashedSecret(string(hPass))
-		return self.UserContext.HashedSecret(), nil
+		ba.UserContext.SetHashedSecret(string(hPass))
+		return ba.UserContext.HashedSecret(), nil
 	}
 
 	// bad argument count
-	return "", errors.New("Too many arguments provided, expected one")
+	return "", errors.New("too many arguments provided, expected one")
 }
 
 // Bycrypt Authenticate() expects a single string argument of the plaintext password
-// It returns true on success and false if error or password mismatch
-func (self *BcryptAuth) Authenticate() (bool, error) {
+// It returns true on success and false if error or password mismatch.
+func (ba *BcryptAuth) Authenticate() (bool, error) {
 	// check password
-	err := bcrypt.CompareHashAndPassword([]byte(self.UserContext.HashedSecret()), []byte(self.UserContext.Secret()))
+	err := bcrypt.CompareHashAndPassword([]byte(ba.UserContext.HashedSecret()), []byte(ba.UserContext.Secret()))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
 		return false, nil
 	}

@@ -1,8 +1,9 @@
 package pongo2
 
 import (
-	p2 "github.com/flosch/pongo2"
 	"reflect"
+
+	p2 "github.com/flosch/pongo2"
 )
 
 type tagAppendNode struct {
@@ -51,7 +52,7 @@ func (node *tagAppendNode) Execute(ctx *p2.ExecutionContext, writer p2.TemplateW
 // tagURLForParser implements a {% urlfor %} tag.
 //
 // urlfor takes one argument for the controller, as well as any number of key/value pairs for additional URL data.
-// Example: {% urlfor "UserController.View" ":slug" "oal" %}
+// Example: {% urlfor "UserController.View" ":slug" "oal" %}.
 func tagAppendParser(doc *p2.Parser, start *p2.Token, arguments *p2.Parser) (p2.INodeTag, *p2.Error) {
 	var name string
 	var isPublic bool
@@ -75,11 +76,9 @@ func tagAppendParser(doc *p2.Parser, start *p2.Token, arguments *p2.Parser) (p2.
 	}
 
 	return &INodeImplied{Exec: func(ctx *p2.ExecutionContext, w p2.TemplateWriter) *p2.Error {
-
 		node := &tagAppendNode{isPublic, name, evals}
 		return node.Execute(ctx, w)
 	}}, nil
-
 }
 
 func init() {

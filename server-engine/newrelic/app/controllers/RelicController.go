@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/newrelic/go-agent"
-	"github.com/revel/modules/server-engine/newrelic"
+	newrelic "github.com/newrelic/go-agent"
+	revelnewrelic "github.com/revel/modules/server-engine/newrelic"
 	"github.com/revel/revel"
 )
 

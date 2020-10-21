@@ -2,33 +2,35 @@ package testsuite
 
 import (
 	"flag"
-	"github.com/revel/revel"
 	"os"
 	"sync"
 	"testing"
+
+	"github.com/revel/revel"
 )
 
 var importPath *string = flag.String("revel.importPath", "", "Go Import Path for the app.")
 
 // This function is a helper to allow a test to wrap the Revel server using this
-// GoHttpTest server. Which simply transfers the request / response calls using a channel
+// GoHttpTest server. Which simply transfers the request / response calls using a channel.
 func RevelTestHelper(m *testing.M, mode string, runner func(port int)) {
 	flag.Parse()
 	// call flag.Parse() here if TestMain uses flags
 	locker := sync.Mutex{}
 	revel.AddInitEventHandler(func(event revel.Event, value interface{}) (returnType revel.EventResponse) {
-		if event == revel.REVEL_BEFORE_MODULES_LOADED {
+		switch event {
+		case revel.REVEL_BEFORE_MODULES_LOADED:
 			revel.Config.SetOption("server.engine", "go-test")
 			revel.Config.SetOption("module.go-test", "github.com/revel/modules/server-engine/gohttptest")
-
-		} else if event == revel.ENGINE_STARTED {
+		case revel.ENGINE_STARTED:
 			go func() {
 				// Wait for the server to send back a start response
 				<-revel.CurrentEngine.(*GoHttpServer).StartedChan
 				locker.Unlock()
 			}()
-		} else if event == revel.REVEL_FAILURE {
+		case revel.REVEL_FAILURE:
 			locker.Unlock()
+		default:
 		}
 
 		return 0

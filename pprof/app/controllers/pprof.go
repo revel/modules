@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"github.com/revel/revel"
 	"net/http"
 	"net/http/pprof"
+
+	"github.com/revel/revel"
 )
 
 type Pprof struct {
@@ -11,7 +12,7 @@ type Pprof struct {
 }
 
 // The PprofHandler type makes it easy to call the net/http/pprof handler methods
-// since they all have the same method signature
+// since they all have the same method signature.
 type PprofHandler func(http.ResponseWriter, *http.Request)
 
 func (r PprofHandler) Apply(req *revel.Request, resp *revel.Response) {

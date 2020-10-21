@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-// The file information contains information about the file that will be rendered on the page
+// The file information contains information about the file that will be rendered on the page.
 type FileInformation struct {
 	Icon     string     // The icon
 	Name     string     // The file name

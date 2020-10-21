@@ -5,19 +5,19 @@
 package controllers
 
 import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	fpath "path/filepath"
 	"strings"
 	"syscall"
 
-	"fmt"
 	"github.com/revel/modules/static/app/model"
 	"github.com/revel/revel"
-	"io/ioutil"
-	"net/http"
 )
 
-// Static file serving controller
+// Static file serving controller.
 type Static struct {
 	*revel.Controller
 }
@@ -71,6 +71,7 @@ var byteSizeList = [][]interface{}{
 //     favicon.ico
 //   Calls:
 //     Static.Serve("public/img", "favicon.png")
+//nolint:staticcheck
 func (c Static) Serve(prefix, filepath string) revel.Result {
 	// Fix for #503.
 	prefix = c.Params.Fixed.Get("prefix")
@@ -81,7 +82,8 @@ func (c Static) Serve(prefix, filepath string) revel.Result {
 	return serve(c, prefix, filepath, false)
 }
 
-// This function serves out the directory as a browseable folder
+// This function serves out the directory as a browseable folder.
+//nolint:staticcheck
 func (c Static) ServeDir(prefix, filepath string) revel.Result {
 	// Fix for #503.
 	prefix = c.Params.Fixed.Get("prefix")
@@ -95,6 +97,7 @@ func (c Static) ServeDir(prefix, filepath string) revel.Result {
 // ServeModule method allows modules to serve binary files. The parameters are the same
 // as Static.Serve with the additional module name pre-pended to the list of
 // arguments.
+//nolint:staticcheck
 func (c Static) ServeModule(moduleName, prefix, filepath string) revel.Result {
 	// Fix for #503.
 	prefix = c.Params.Fixed.Get("prefix")
@@ -103,12 +106,15 @@ func (c Static) ServeModule(moduleName, prefix, filepath string) revel.Result {
 	}
 
 	var basePath string
-	if module, found := revel.ModuleByName(moduleName); !found {
+
+	module, found := revel.ModuleByName(moduleName)
+	if !found {
 		c.Log.Errorf("static: Module not found %s", moduleName)
+
 		return c.NotFound(moduleName)
-	} else {
-		basePath = module.Path
 	}
+
+	basePath = module.Path
 
 	absPath := fpath.Join(basePath, fpath.FromSlash(prefix))
 
@@ -118,6 +124,7 @@ func (c Static) ServeModule(moduleName, prefix, filepath string) revel.Result {
 // ServeModule method allows modules to serve binary files. The parameters are the same
 // as Static.Serve with the additional module name pre-pended to the list of
 // arguments.
+//nolint:staticcheck
 func (c Static) ServeModuleDir(moduleName, prefix, filepath string) revel.Result {
 	// Fix for #503.
 	prefix = c.Params.Fixed.Get("prefix")
@@ -137,9 +144,11 @@ func (c Static) ServeModuleDir(moduleName, prefix, filepath string) revel.Result
 	return serve(c, absPath, filepath, true)
 }
 
-const DIR_ICON = "folder.png"
-const UP_DIR_ICON = "upfolder.png"
-const FILE_ICON = "document.png"
+const (
+	DIR_ICON    = "folder.png"
+	UP_DIR_ICON = "upfolder.png"
+	FILE_ICON   = "document.png"
+)
 
 // This method allows static serving of application files in a verified manner.
 func serve(c Static, prefix, filepath string, allowDir bool) revel.Result {
@@ -190,7 +199,7 @@ func serve(c Static, prefix, filepath string, allowDir bool) revel.Result {
 
 		viewArgs, err := c.processDir(fname, fpath.Join(basePath, prefix))
 		if err != nil {
-			viewArgs["message"] = fmt.Sprintf("An error occured %s", err.Error())
+			viewArgs["message"] = fmt.Sprintf("An error occurred %s", err.Error())
 		}
 		c.ViewArgs["details"] = viewArgs
 		return c.RenderTemplate("static/folder-view.html")
@@ -209,7 +218,7 @@ func serve(c Static, prefix, filepath string, allowDir bool) revel.Result {
 	return c.RenderFile(file, revel.Inline)
 }
 
-// Process a directory create a list of objects to be rendered representing the data for the directory
+// Process a directory create a list of objects to be rendered representing the data for the directory.
 func (c *Static) processDir(fullPath, basePath string) (args map[string]interface{}, err error) {
 	dirName := fpath.Base(fullPath)
 	args = map[string]interface{}{"dirName": dirName}
@@ -249,7 +258,7 @@ func (c *Static) processDir(fullPath, basePath string) (args map[string]interfac
 				size = byteSizeList[x][0].(string)
 				divider = byteSizeList[x][1].(int64)
 			}
-			fileInfo.Size = fileInfo.Size / divider
+			fileInfo.Size /= divider
 			fileInfo.SizeType = size
 			fileInfo.NiceSize = fmt.Sprintf("%0.1d %s", fileInfo.Size, size)
 			fileInfo.Relative = fileInfo.Name

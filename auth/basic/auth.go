@@ -1,12 +1,8 @@
 package auth
 
-import (
 // "errors"
-)
 
-var (
-	Store StorageDriver
-)
+var Store StorageDriver
 
 // Store = gormauth.NewGormAuthDriver()
 

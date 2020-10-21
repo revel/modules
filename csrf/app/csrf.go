@@ -8,13 +8,12 @@ import (
 	"io"
 	"math"
 	"net/url"
-
 	"strings"
 
 	"github.com/revel/revel"
 )
 
-// allowMethods are HTTP methods that do NOT require a token
+// allowMethods are HTTP methods that do NOT require a token.
 var allowedMethods = map[string]bool{
 	"GET":     true,
 	"HEAD":    true,
@@ -63,8 +62,8 @@ func CsrfFilter(c *revel.Controller, fc []revel.Filter) {
 		return
 	}
 
-	requestUrl := getFullRequestURL(c)
-	isSameOrigin := sameOrigin(requestUrl, referer)
+	requestURL := getFullRequestURL(c)
+	isSameOrigin := sameOrigin(requestURL, referer)
 	// If the Request method isn't in the white listed methods
 	if !allowedMethods[c.Request.Method] && !IsExempt(c) {
 		validToken := validToken(token, isSameOrigin, foundToken, c)
@@ -83,7 +82,7 @@ func CsrfFilter(c *revel.Controller, fc []revel.Filter) {
 	}
 }
 
-// If this call should be checked validate token
+// If this call should be checked validate token.
 func validToken(token string, isSameOrigin, foundToken bool, c *revel.Controller) (result bool) {
 	// Token wasn't present at all
 	if !foundToken {
@@ -116,24 +115,24 @@ func validToken(token string, isSameOrigin, foundToken bool, c *revel.Controller
 	return true
 }
 
-// Helper function to fix the full URL in the request
-func getFullRequestURL(c *revel.Controller) (requestUrl *url.URL) {
-	requestUrl = c.Request.URL
+// Helper function to fix the full URL in the request.
+func getFullRequestURL(c *revel.Controller) (requestURL *url.URL) {
+	requestURL = c.Request.URL
 
-	c.Log.Debug("Using ", "request url host", requestUrl.Host, "request host", c.Request.Host, "cookie domain", revel.CookieDomain)
+	c.Log.Debug("Using ", "request url host", requestURL.Host, "request host", c.Request.Host, "cookie domain", revel.CookieDomain)
 	// Update any of the information based on the headers
 	if host := c.Request.GetHttpHeader("X-Forwarded-Host"); host != "" {
-		requestUrl.Host = strings.ToLower(host)
+		requestURL.Host = strings.ToLower(host)
 	}
 	if scheme := c.Request.GetHttpHeader("X-Forwarded-Proto"); scheme != "" {
-		requestUrl.Scheme = strings.ToLower(scheme)
+		requestURL.Scheme = strings.ToLower(scheme)
 	}
 	if scheme := c.Request.GetHttpHeader("X-Forwarded-Scheme"); scheme != "" {
-		requestUrl.Scheme = strings.ToLower(scheme)
+		requestURL.Scheme = strings.ToLower(scheme)
 	}
 
 	// Use the revel.CookieDomain for the hostname, or the c.Request.Host
-	if requestUrl.Host == "" {
+	if requestURL.Host == "" {
 		host := revel.CookieDomain
 		if host == "" && c.Request.Host != "" {
 			host = c.Request.Host
@@ -142,47 +141,51 @@ func getFullRequestURL(c *revel.Controller) (requestUrl *url.URL) {
 				host = host[:i]
 			}
 		}
-		requestUrl.Host = host
+		requestURL.Host = host
 	}
 
 	// If no scheme found in headers use the revel server settings
-	if requestUrl.Scheme == "" {
+	if requestURL.Scheme == "" {
 		// Fix the Request.URL, it is missing information, go http server does this
 		if revel.HTTPSsl {
-			requestUrl.Scheme = "https"
+			requestURL.Scheme = "https"
 		} else {
-			requestUrl.Scheme = "http"
+			requestURL.Scheme = "http"
 		}
-		fixedUrl := requestUrl.Scheme + "://" + c.Request.Host + c.Request.URL.Path
-		if purl, err := url.Parse(fixedUrl); err == nil {
-			requestUrl = purl
+
+		fixedURL := requestURL.Scheme + "://" + c.Request.Host + c.Request.URL.Path
+		if purl, err := url.Parse(fixedURL); err == nil {
+			requestURL = purl
 		}
 	}
 
-	c.Log.Debug("getFullRequestURL ", "requesturl", requestUrl.String())
+	c.Log.Debug("getFullRequestURL ", "requestURL", requestURL.String())
+
 	return
 }
 
-// Compare the two tokens
+// Compare the two tokens.
 func compareToken(requestToken, token string) bool {
 	// ConstantTimeCompare will panic if the []byte aren't the same length
 	if len(requestToken) != len(token) {
 		return false
 	}
+
 	return subtle.ConstantTimeCompare([]byte(requestToken), []byte(token)) == 1
 }
 
-// Validates same origin policy
+// Validates same origin policy.
 func sameOrigin(u1, u2 *url.URL) bool {
 	return u1.Scheme == u2.Scheme && u1.Hostname() == u2.Hostname()
 }
 
-// Add a function to the template functions map
+// Add a function to the template functions map.
 func init() {
 	revel.TemplateFuncs["csrftoken"] = func(viewArgs map[string]interface{}) template.HTML {
 		if tokenFunc, ok := viewArgs["_csrftoken"]; !ok {
 			panic("REVEL CSRF: _csrftoken missing from ViewArgs.")
 		} else {
+			//nolint:gosec
 			return template.HTML(tokenFunc.(string))
 		}
 	}

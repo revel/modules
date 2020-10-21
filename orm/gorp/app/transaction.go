@@ -2,12 +2,13 @@ package gorp
 
 import (
 	"database/sql"
+
 	sq "github.com/Masterminds/squirrel"
 	gorpa "github.com/go-gorp/gorp"
 )
 
 type (
-	// This is a small wrapped around gorp.Transaction so you can make use of the builder statements as well
+	// This is a small wrapped around gorp.Transaction so you can make use of the builder statements as well.
 	Transaction struct {
 		Map    *gorpa.Transaction
 		dbgorp *DbGorp
@@ -17,9 +18,11 @@ type (
 func (txn *Transaction) Rollback() (err error) {
 	return txn.Map.Rollback()
 }
+
 func (txn *Transaction) Commit() (err error) {
 	return txn.Map.Commit()
 }
+
 func (txn *Transaction) Select(i interface{}, builder sq.SelectBuilder) (l []interface{}, err error) {
 	query, args, err := builder.ToSql()
 	if err == nil {
@@ -61,6 +64,7 @@ func (txn *Transaction) ExecUpdate(builder sq.UpdateBuilder) (r sql.Result, err 
 	}
 	return
 }
+
 func (txn *Transaction) ExecInsert(builder sq.InsertBuilder) (r sql.Result, err error) {
 	query, args, err := builder.ToSql()
 	if err == nil {
@@ -74,21 +78,27 @@ func (txn *Transaction) ExecInsert(builder sq.InsertBuilder) (r sql.Result, err 
 func (txn *Transaction) Insert(list ...interface{}) error {
 	return txn.Map.Insert(list...)
 }
+
 func (txn *Transaction) Update(list ...interface{}) (int64, error) {
 	return txn.Map.Update(list...)
 }
+
 func (txn *Transaction) Get(i interface{}, keys ...interface{}) (interface{}, error) {
 	return txn.Map.Get(i, keys...)
 }
+
 func (txn *Transaction) Delete(i ...interface{}) (int64, error) {
 	return txn.Map.Delete(i...)
 }
+
 func (txn *Transaction) GetMap() DbGeneric {
 	return txn.Map
 }
+
 func (txn *Transaction) Builder() sq.StatementBuilderType {
 	return txn.dbgorp.SqlStatementBuilder
 }
+
 func (txn *Transaction) Schema() (result string) {
 	return txn.dbgorp.Schema()
 }

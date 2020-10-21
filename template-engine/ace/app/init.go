@@ -2,11 +2,12 @@ package app
 
 import (
 	"fmt"
-	"github.com/revel/revel"
-	"github.com/yosssi/ace"
 	"html/template"
 	"io"
 	"strings"
+
+	"github.com/revel/revel"
+	"github.com/yosssi/ace"
 )
 
 const ACE_TEMPLATE = "ace"
@@ -22,7 +23,7 @@ type AceTemplate struct {
 
 // A bit trick of an implementation
 // If the arg contains an ace_inner field then that will be used
-// to fetch a new template
+// to fetch a new template.
 func (acetmpl AceTemplate) Render(wr io.Writer, arg interface{}) error {
 	// We can redirect this render to another template if the arguments contain ace_content in them
 	if argmap, ok := arg.(map[string]interface{}); ok {
@@ -31,20 +32,23 @@ func (acetmpl AceTemplate) Render(wr io.Writer, arg interface{}) error {
 			newtemplatename := acetmpl.TemplateName + "-" + acecontent
 			// Now lookup the template again
 			if _, ok := acetmpl.engine.templatesByName[newtemplatename]; !ok {
-				if inner, ok := acetmpl.engine.templatesByName[acecontent]; !ok {
-					return fmt.Errorf("Inner content %s not found in ace templates", acecontent)
-				} else {
-					acetmpl.engine.templatesByName[newtemplatename] = &AceTemplate{
-						File:         acetmpl.File,
-						Inner:        inner.File,
-						engine:       acetmpl.engine,
-						TemplateView: acetmpl.TemplateView}
+				inner, ok := acetmpl.engine.templatesByName[acecontent]
+				if ok {
+					return fmt.Errorf("inner content %s not found in ace templates", acecontent)
 				}
 
+				acetmpl.engine.templatesByName[newtemplatename] = &AceTemplate{
+					File:         acetmpl.File,
+					Inner:        inner.File,
+					engine:       acetmpl.engine,
+					TemplateView: acetmpl.TemplateView,
+				}
 			}
+
 			return acetmpl.engine.templatesByName[newtemplatename].renderInternal(wr, arg)
 		}
 	}
+
 	return acetmpl.renderInternal(wr, arg)
 }
 
@@ -54,18 +58,22 @@ func (acetmpl AceTemplate) renderInternal(wr io.Writer, arg interface{}) error {
 		if acetmpl.Inner == nil {
 			acetmpl.Inner = ace.NewFile("", nil)
 		}
-		source := ace.NewSource(acetmpl.File, acetmpl.Inner, acetmpl.engine.files)
-		result, err := ace.ParseSource(source, acetmpl.engine.Options)
 
+		source := ace.NewSource(acetmpl.File, acetmpl.Inner, acetmpl.engine.files)
+
+		result, err := ace.ParseSource(source, acetmpl.engine.Options)
 		if err != nil {
 			return err
 		}
-		if gtemplate, err := ace.CompileResult(acetmpl.TemplateName, result, acetmpl.engine.Options); err != nil {
+
+		gtemplate, err := ace.CompileResult(acetmpl.TemplateName, result, acetmpl.engine.Options)
+		if err != nil {
 			return err
-		} else {
-			acetmpl.Template = gtemplate
 		}
+
+		acetmpl.Template = gtemplate
 	}
+
 	return acetmpl.Execute(wr, arg)
 }
 
@@ -77,19 +85,18 @@ type AceEngine struct {
 	CaseInsensitive bool
 }
 
-func (i *AceEngine) ConvertPath(path string) string {
-	if i.CaseInsensitive {
+func (engine *AceEngine) ConvertPath(path string) string {
+	if engine.CaseInsensitive {
 		return strings.ToLower(path)
 	}
 	return path
 }
 
-func (i *AceEngine) Handles(templateView *revel.TemplateView) bool {
-	return revel.EngineHandles(i, templateView)
+func (engine *AceEngine) Handles(templateView *revel.TemplateView) bool {
+	return revel.EngineHandles(engine, templateView)
 }
 
 func (engine *AceEngine) ParseAndAdd(baseTemplate *revel.TemplateView) error {
-
 	// Ace templates must only render views specified for it (no trial and error)
 	if baseTemplate.EngineType != ACE_TEMPLATE {
 		return &revel.Error{
@@ -128,7 +135,6 @@ func (engine *AceEngine) Event(action revel.Event, i interface{}) {
 
 func init() {
 	revel.RegisterTemplateLoader(ACE_TEMPLATE, func(loader *revel.TemplateLoader) (revel.TemplateEngine, error) {
-
 		return &AceEngine{
 			loader:          loader,
 			templatesByName: map[string]*AceTemplate{},

@@ -11,14 +11,21 @@ package gormdb
 
 import (
 	"fmt"
+
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"    // mysql package
-	_ "github.com/jinzhu/gorm/dialects/postgres" // postgres package
-	_ "github.com/jinzhu/gorm/dialects/sqlite"   // mysql package
+
+	// mysql package.
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+
+	// postgres package.
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+
+	// mysql package.
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/revel/revel"
 )
 
-// DB Gorm
+// DB Gorm.
 var (
 	DB      *gorm.DB
 	gormLog = revel.AppLog
@@ -30,7 +37,7 @@ func init() {
 	})
 }
 
-// InitDB database
+// InitDB database.
 func OpenDB(dbDriver string, dbInfo string) {
 	db, err := gorm.Open(dbDriver, dbInfo)
 	if err != nil {
@@ -41,7 +48,6 @@ func OpenDB(dbDriver string, dbInfo string) {
 	if singulartable {
 		DB.SingularTable(singulartable)
 	}
-
 }
 
 type DbInfo struct {
@@ -65,7 +71,6 @@ func InitDBWithParameters(params DbInfo) {
 		fmt.Println(dbInfo)
 	}
 	OpenDB(params.DbDriver, dbInfo)
-
 }
 
 func InitDB() {

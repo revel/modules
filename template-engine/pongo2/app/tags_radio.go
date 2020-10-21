@@ -26,21 +26,21 @@ func (node *tagRadioNode) Execute(ctx *p2.ExecutionContext, writer p2.TemplateWr
 	if err != nil {
 		return err
 	}
-	val_str := val.String()
+	valStr := val.String()
 
 	checked := ""
-	if field.Flash() == val_str {
+	if field.Flash() == valStr {
 		checked = " checked"
 	}
 	fmt.Fprintf(writer, `<input type="radio" name="%s" value="%s"%s>`,
-		html.EscapeString(field.Name), html.EscapeString(val_str), checked)
+		html.EscapeString(field.Name), html.EscapeString(valStr), checked)
 	return nil
 }
 
 // tagURLForParser implements a {% urlfor %} tag.
 //
 // urlfor takes one argument for the controller, as well as any number of key/value pairs for additional URL data.
-// Example: {% urlfor "UserController.View" ":slug" "oal" %}
+// Example: {% urlfor "UserController.View" ":slug" "oal" %}.
 func tagRadioParser(doc *p2.Parser, start *p2.Token, arguments *p2.Parser) (p2.INodeTag, *p2.Error) {
 	var field string
 	typeToken := arguments.MatchType(p2.TokenIdentifier)
@@ -57,9 +57,10 @@ func tagRadioParser(doc *p2.Parser, start *p2.Token, arguments *p2.Parser) (p2.I
 		return nil, err
 	}
 	return &INodeImplied{Exec: func(ctx *p2.ExecutionContext, w p2.TemplateWriter) *p2.Error {
-
-		v := &tagRadioNode{Pongo2BaseTag: Pongo2BaseTag{field: field},
-			value: expr}
+		v := &tagRadioNode{
+			Pongo2BaseTag: Pongo2BaseTag{field: field},
+			value:         expr,
+		}
 		return v.Execute(ctx, w)
 	}}, nil
 }
