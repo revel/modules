@@ -1,0 +1,22 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+module:testrunner
+
+# Adding JWT Auth routes into application
+module:jwtauth
+
+GET     /                                       App.Index
+POST 	/register								App.Register
+POST 	/forgot-password						App.ForgotPassword
+POST 	/reset-password							App.ResetPassword
+
+# Ignore favicon requests
+GET     /favicon.ico                            404
+
+# Map static resources from the /app/public folder to the /public path
+GET     /public/*filepath                       Static.Serve("public")
+
+# Catch all
+*       /:controller/:action                    :controller.:action
