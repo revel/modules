@@ -25,12 +25,12 @@ require (
 	github.com/twinj/uuid v1.0.0 // indirect
 	github.com/tylerb/gls v0.0.0-20150407001822-e606233f194d
 	github.com/tylerb/is v2.1.4+incompatible // indirect
-	github.com/valyala/fasthttp v1.12.0
+	github.com/valyala/fasthttp v1.34.0
 	github.com/xeonx/timeago v1.0.0-rc4 // indirect
 	github.com/yosssi/ace v0.0.5
 	github.com/ziutek/mymysql v1.5.4 // indirect
-	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
-	golang.org/x/net v0.0.0-20200501053045-e0ff5e5a1de5
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
 	gopkg.in/fsnotify/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/stack.v0 v0.0.0-20141108040640-9b43fcefddd0 // indirect
